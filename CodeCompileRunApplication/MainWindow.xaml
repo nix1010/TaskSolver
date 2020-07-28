@@ -2,7 +2,18 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="525">
+    
     <Grid>
-        
+        <DockPanel>
+            <Menu Margin="0,0,0,290" Width="515">
+                <MenuItem Header="_File" >
+                    <MenuItem Header="_Open" Name="Open" Click="Open_Click" />
+                    <MenuItem Header="_Save" Name="Save" Click="Save_Click" />
+                    <MenuItem Header="E_xit" Name="exit" Click="Exit_Click" />
+                </MenuItem>
+            </Menu>
+            <RichTextBox Name="rtbEditor" />
+            <ComboBox Name="cmbProgrammingLanguage" SelectionChanged="cmbProgrammingLanguage_SelectionChanged"></ComboBox>
+        </DockPanel>
     </Grid>
 </Window>
