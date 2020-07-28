@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,6 +15,9 @@ using System.Net;
 using System.Net.Http;
 using System.IO;
 using Microsoft.Win32;
+using Newtonsoft.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CodeEditorApplication
 {
@@ -25,17 +27,26 @@ namespace CodeEditorApplication
     public partial class MainWindow : Window
     {
         private string fileName;
+        private string username;
+        private string password;
         private const string host = "http://localhost:50791/";
-        private ProgrammingLanguage programmingLanguage;
+        private List<CodeEditorApplication.Task> tasks;
 
         public MainWindow()
         {
+            
             InitializeComponent();
+            
             this.KeyDown += new KeyEventHandler(MainWindow_TabKeyDown);
-
+            this.Loaded += new RoutedEventHandler(MainWindow_Loaded);
+            
             cmbProgrammingLanguage.ItemsSource = Enum.GetValues(typeof(ProgrammingLanguage));
-            fileName = null;
+
+            username = password = "user1";
+            New_Click(null, null);
         }
+
+        #region----- Button Events -----
 
         private void New_Click(object sender, RoutedEventArgs e)
         {
@@ -113,16 +124,89 @@ namespace CodeEditorApplication
 
         private void Send_Click(object sender, RoutedEventArgs e)
         {
-            
-        }
-
-        private void cmbProgrammingLanguage_SelectionChanged(object sender, RoutedEventArgs e)
-        {
-            if (cmbProgrammingLanguage.SelectedItem != null)
+            if (cmbProgrammingLanguage.SelectedIndex == -1)
             {
-                programmingLanguage = (ProgrammingLanguage)cmbProgrammingLanguage.SelectedItem;
+                MessageBox.Show("Please select langauge", "Warning");
+                return;
+            }
+
+            if (cmbTasks.SelectedIndex == -1)
+            {
+                MessageBox.Show("Please select task", "Warning");
+                return;
+            }
+
+            Dictionary<string, string> body = new Dictionary<string, string>();
+
+            body.Add("username", username);
+            body.Add("password", password);
+            body.Add("ProgrammingLanguage", cmbProgrammingLanguage.SelectedItem.ToString());
+            body.Add("Code", new TextRange(rtbEditor.Document.ContentStart, rtbEditor.Document.ContentEnd).Text);
+
+            HttpResponseMessage responseMessage = PostRequest(host + "/api/tasks/" + (cmbTasks.SelectedIndex + 1), body);
+
+            if (responseMessage.StatusCode == HttpStatusCode.OK)
+            {
+                string responseText = responseMessage.Content.ReadAsStringAsync().Result;
+
+                RunResult runResult = JsonConvert.DeserializeObject<RunResult>(responseText);
+                
+                MessageBox.Show("Correct: " + runResult.CorrectExamples);
+                
+                foreach (ExampleResult r in runResult.exampleResults)
+                {
+                    MessageBox.Show(r.Input + " " + r.Output + " " + r.SolutionResult + " " + r.Description);
+                }
+            }
+            else
+            {
+                MessageBox.Show(responseMessage.StatusCode.ToString() + ": " + responseMessage.Content.ReadAsStringAsync().Result);
             }
         }
+
+        private void Details_Click(object sender, RoutedEventArgs e)
+        {
+            if (cmbTasks.SelectedIndex != -1)
+            {
+                MessageBox.Show(tasks[cmbTasks.SelectedIndex].Description, tasks[cmbTasks.SelectedIndex].Title);
+            }
+        }
+        #endregion
+
+        #region----- Window Events -----
+
+        private void MainWindow_Loaded(object sender, EventArgs e)
+        {
+            Thread thread = new Thread(PopulateTasks);
+
+            thread.Start(); 
+        }
+
+        private void PopulateTasks()
+        {
+            HttpResponseMessage responseMessage = GetRequest(host + "api/tasks");
+
+            if (responseMessage.StatusCode == HttpStatusCode.OK)
+            {
+                string responseText = responseMessage.Content.ReadAsStringAsync().Result;
+
+                tasks = JsonConvert.DeserializeObject<List<CodeEditorApplication.Task>>(responseText);
+
+                for (int i = 0; i < tasks.Count; ++i)
+                {
+                    // force WPF to render UI elemnts
+                    Dispatcher.Invoke(new Action(() => { cmbTasks.Items.Add(tasks[i].Title); }));
+                }
+            }
+            else
+            {
+                MessageBox.Show(responseMessage.StatusCode + ": " + responseMessage.Content.ReadAsStringAsync().Result);
+            }
+        }
+
+        #endregion
+
+        #region----- Key Events -----
 
         private void MainWindow_TabKeyDown(object sender, KeyEventArgs e)
         {
@@ -132,30 +216,56 @@ namespace CodeEditorApplication
                 rtbEditor.Focus();
             }
         }
+        #endregion
 
-        private KeyValuePair<HttpStatusCode, string> PostRequest(string url, Dictionary<string, string> body)
+        #region----- HTTP Requests -----
+
+        private HttpResponseMessage PostRequest(string url, Dictionary<string, string> body)
         {
             HttpClient client = new HttpClient();
+
+            HttpStatusCode statusCode;
+            string responseText;
 
             FormUrlEncodedContent content = new FormUrlEncodedContent(body);
             Task<HttpResponseMessage> response = client.PostAsync(url, content);
 
-            HttpStatusCode statusCode = response.Result.StatusCode;
-            string responseText = response.Result.Content.ReadAsStringAsync().Result;
+            try
+            {
+                statusCode = response.Result.StatusCode;
+                responseText = response.Result.Content.ReadAsStringAsync().Result;
+            }
+            catch (Exception)
+            {
+                statusCode = HttpStatusCode.RequestTimeout;
+                responseText = "Error sendig request";
+            }
 
-            return new KeyValuePair<HttpStatusCode, string>(statusCode, responseText);
+            return new HttpResponseMessage(statusCode) { Content = new StringContent(responseText) };
         }
 
-        private KeyValuePair<HttpStatusCode, string> GetRequest(string url)
+        private HttpResponseMessage GetRequest(string url)
         {
             HttpClient client = new HttpClient();
 
+            HttpStatusCode statusCode;
+            string responseText = "";
+
             Task<HttpResponseMessage> response = client.GetAsync(url);
+            
+            try
+            {
+                 statusCode = response.Result.StatusCode;
+                 responseText = response.Result.Content.ReadAsStringAsync().Result;
+            }
+            catch(Exception)
+            {
+                statusCode = HttpStatusCode.RequestTimeout;
+                responseText = "Error sending request";
+            }
 
-            HttpStatusCode statusCode = response.Result.StatusCode;
-            string responseText = response.Result.Content.ReadAsStringAsync().Result;
-
-            return new KeyValuePair<HttpStatusCode, string>(statusCode, responseText);
+            return new HttpResponseMessage(statusCode) { Content = new StringContent(responseText) };
         }
+        #endregion
     }
 }

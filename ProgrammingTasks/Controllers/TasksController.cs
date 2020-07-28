@@ -148,6 +148,11 @@ namespace ProgrammingTasks.Controllers
 
             if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.JAVA)
             {
+                if (taskSolution.Code == null || taskSolution.Code.Trim() == "")
+                {
+                    ThrowException(HttpStatusCode.BadRequest, "Empty file");
+                }
+
                 fileName = "C:\\users\\nikola\\desktop\\Main.java";
                 command = "/C javac " + fileName;
             }

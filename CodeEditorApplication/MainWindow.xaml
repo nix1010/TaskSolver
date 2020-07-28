@@ -15,9 +15,14 @@
         </Menu>
         <WrapPanel>
             <Label>Programming Language</Label>
-            <ComboBox Name="cmbProgrammingLanguage" Width="100" SelectionChanged="cmbProgrammingLanguage_SelectionChanged"></ComboBox>
+            <ComboBox Name="cmbProgrammingLanguage" Width="100"></ComboBox>
         </WrapPanel>
-        <RichTextBox Name="rtbEditor" Height="440" Block.LineHeight="2"/>
+        <WrapPanel>
+            <Label>Task</Label>
+            <ComboBox Name="cmbTasks" Width="200"></ComboBox>
+            <Button Click="Details_Click">Details</Button>
+        </WrapPanel>
+        <RichTextBox Name="rtbEditor" Height="410" Block.LineHeight="2"/>
         <Button Click="Send_Click" HorizontalAlignment="Right">Send</Button>
     </StackPanel>
 </Window>
