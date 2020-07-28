@@ -198,7 +198,6 @@
     <Compile Include="Models\Entity\users_solutions.cs">
       <DependentUpon>EntityModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\ErrorInfo.cs" />
     <Compile Include="Models\ProcessInfo.cs" />
     <Compile Include="Models\ProgrammingLanguage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -358,7 +357,7 @@
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>0</DevelopmentServerPort>
+          <DevelopmentServerPort>49569</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>http://localhost:50791/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>

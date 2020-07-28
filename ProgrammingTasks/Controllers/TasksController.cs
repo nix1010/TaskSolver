@@ -75,7 +75,7 @@ namespace ProgrammingTasks.Controllers
 
                 if (taskResult == null)
                 {
-                    ThrowException(HttpStatusCode.NotFound, "Task with id " + taskSolution.TaskId + " doesn't exist");
+                    ThrowException(HttpStatusCode.NotFound, "Task with id " + id + " doesn't exist");
                 }
 
                 RunResultDTO runResult = RunExamples(taskSolution, taskResult.examples);
@@ -163,7 +163,7 @@ namespace ProgrammingTasks.Controllers
             }
             else
             {
-                ThrowException(HttpStatusCode.NotFound, "Specified language not supported");
+                ThrowException(HttpStatusCode.BadRequest, "Specified language not supported");
             }
            
             //write code to file

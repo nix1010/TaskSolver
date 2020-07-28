@@ -1,0 +1,23 @@
+﻿<Window x:Class="CodeEditorApplication.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Code Editor" Height="550" Width="725">
+
+    <StackPanel>
+        <Menu>
+            <MenuItem Header="_File" >
+                <MenuItem Header="_New" Name="New" Click="New_Click" />
+                <MenuItem Header="_Open" Name="Open" Click="Open_Click" />
+                <MenuItem Header="_Save" Name="Save" Click="Save_Click" />
+                <MenuItem Header="_Save As" Name="SaveAs" Click="SaveAs_Click" />
+                <MenuItem Header="E_xit" Name="exit" Click="Exit_Click" />
+            </MenuItem>
+        </Menu>
+        <WrapPanel>
+            <Label>Programming Language</Label>
+            <ComboBox Name="cmbProgrammingLanguage" Width="100" SelectionChanged="cmbProgrammingLanguage_SelectionChanged"></ComboBox>
+        </WrapPanel>
+        <RichTextBox Name="rtbEditor" Height="440" Block.LineHeight="2"/>
+        <Button Click="Send_Click" HorizontalAlignment="Right">Send</Button>
+    </StackPanel>
+</Window>

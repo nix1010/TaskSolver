@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeCompileRunApplication", "CodeCompileRunApplication\CodeCompileRunApplication.csproj", "{A3DBA18E-E2D1-4823-BDA2-C17313997C12}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeEditorApplication", "CodeEditorApplication\CodeEditorApplication.csproj", "{A3DBA18E-E2D1-4823-BDA2-C17313997C12}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProgrammingTasks", "ProgrammingTasks\ProgrammingTasks.csproj", "{CD6948BC-FCC2-4647-933F-151E014EAD50}"
 EndProject
