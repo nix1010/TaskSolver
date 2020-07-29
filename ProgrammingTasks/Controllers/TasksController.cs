@@ -14,6 +14,9 @@ namespace ProgrammingTasks.Controllers
 {
     public class TasksController : ApiController
     {
+        private const string codeLocation = "C:\\users\\nikola\\desktop\\code";
+        private const string binLocation = codeLocation + "\\bin";
+
         // GET api/tasks
         [HttpGet]
         public List<TaskDTO> GetTasks()
@@ -62,6 +65,11 @@ namespace ProgrammingTasks.Controllers
         [HttpPost]
         public RunResultDTO SendSolution(int id, [FromBody] TaskSolutionDTO taskSolution)
         {
+            if (!Directory.Exists(binLocation))
+            {
+                Directory.CreateDirectory(binLocation);
+            }
+
             using (DBEntities entities = new DBEntities())
             {
                 user userResult = entities.users.Single(user => user.username == taskSolution.Username);
@@ -126,7 +134,7 @@ namespace ProgrammingTasks.Controllers
                 }
                 else
                 {
-                    description = "Code threw an exception";
+                    description = "Error running code";
                 }
                 
                 runResult.exampleResults.Add(new ExampleResultDTO() { 
@@ -153,18 +161,18 @@ namespace ProgrammingTasks.Controllers
                     ThrowException(HttpStatusCode.BadRequest, "Empty file");
                 }
 
-                fileName = "C:\\users\\nikola\\desktop\\Main.java";
-                command = "/C javac " + fileName;
+                fileName = codeLocation + "\\Main.java";
+                command = "/C javac -d " + binLocation + " " + fileName;
             }
             else if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.C_PLUS_PLUS)
             {
-                fileName = "C:\\users\\nikola\\desktop\\main.cpp";
-                command = "/C gcc -o C:\\users\\nikola\\desktop\\mainCpp " + fileName;
+                fileName = codeLocation + "\\main.cpp";
+                command = "/C gcc -o " + binLocation + "\\mainCpp " + fileName;
             }
             else if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.C_SHARP)
             {
-                fileName = "C:\\users\\nikola\\desktop\\main.cs";
-                command = "/C csc -out:mainCSharp.exe " + fileName;
+                fileName = codeLocation + "\\main.cs";
+                command = "/C csc -out:" + binLocation + "\\mainCSharp.exe " + fileName;
             }
             else
             {
@@ -186,15 +194,15 @@ namespace ProgrammingTasks.Controllers
 
             if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.JAVA)
             {
-                command = "/C java -cp C:\\users\\nikola\\desktop; Main";
+                command = "/C java -cp " + binLocation + "; Main";
             }
             else if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.C_PLUS_PLUS)
             {
-                command = "/C C:\\users\\nikola\\desktop\\mainCpp";
+                command = "/C " + binLocation + "\\mainCpp";
             }
             else if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.C_SHARP)
             {
-                command = "/C C:\\users\\nikola\\desktop\\mainCSharp";                
+                command = "/C " + binLocation + "\\mainCSharp";                
             }
             else
             {
