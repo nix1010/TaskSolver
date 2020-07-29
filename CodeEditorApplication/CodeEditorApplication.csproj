@@ -60,6 +60,9 @@
     <Compile Include="ExampleResult.cs" />
     <Compile Include="RunResult.cs" />
     <Compile Include="Task.cs" />
+    <Compile Include="UserControlSpinner.xaml.cs">
+      <DependentUpon>UserControlSpinner.xaml</DependentUpon>
+    </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -72,6 +75,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="UserControlSpinner.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ProgrammingLanguage.cs" />

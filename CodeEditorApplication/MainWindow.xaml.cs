@@ -136,32 +136,46 @@ namespace CodeEditorApplication
                 return;
             }
 
-            Dictionary<string, string> body = new Dictionary<string, string>();
+            ucSpinner.Visibility = System.Windows.Visibility.Visible;
 
-            body.Add("username", username);
-            body.Add("password", password);
-            body.Add("ProgrammingLanguage", cmbProgrammingLanguage.SelectedItem.ToString());
-            body.Add("Code", new TextRange(rtbEditor.Document.ContentStart, rtbEditor.Document.ContentEnd).Text);
-
-            HttpResponseMessage responseMessage = PostRequest(host + "/api/tasks/" + (cmbTasks.SelectedIndex + 1), body);
-
-            if (responseMessage.StatusCode == HttpStatusCode.OK)
-            {
-                string responseText = responseMessage.Content.ReadAsStringAsync().Result;
-
-                RunResult runResult = JsonConvert.DeserializeObject<RunResult>(responseText);
-                
-                MessageBox.Show("Correct: " + runResult.CorrectExamples);
-                
-                foreach (ExampleResult r in runResult.exampleResults)
+            //don't block current thread
+            new Thread(() =>
                 {
-                    MessageBox.Show(r.Input + " " + r.Output + " " + r.SolutionResult + " " + r.Description);
-                }
-            }
-            else
-            {
-                MessageBox.Show(responseMessage.StatusCode.ToString() + ": " + responseMessage.Content.ReadAsStringAsync().Result);
-            }
+                    Dictionary<string, string> body = new Dictionary<string, string>();
+
+                    string programmingLanguage =
+                        Dispatcher.Invoke(new Func<string>(() => { return cmbProgrammingLanguage.SelectedItem.ToString(); }));
+
+                    body.Add("username", username);
+                    body.Add("password", password);
+                    body.Add("ProgrammingLanguage", programmingLanguage);
+                    body.Add("Code", new TextRange(rtbEditor.Document.ContentStart, rtbEditor.Document.ContentEnd).Text);
+
+                    int selectedIndex = Dispatcher.Invoke(new Func<int>(() => { return cmbTasks.SelectedIndex + 1; }));
+
+                    HttpResponseMessage responseMessage = PostRequest(host + "/api/tasks/" + selectedIndex, body);
+
+                    Dispatcher.Invoke(new Action(() => { ucSpinner.Visibility = System.Windows.Visibility.Hidden; }));
+
+                    if (responseMessage.StatusCode == HttpStatusCode.OK)
+                    {
+                        string responseText = responseMessage.Content.ReadAsStringAsync().Result;
+
+                        RunResult runResult = JsonConvert.DeserializeObject<RunResult>(responseText);
+
+                        MessageBox.Show("Correct: " + runResult.CorrectExamples);
+
+                        foreach (ExampleResult r in runResult.exampleResults)
+                        {
+                            MessageBox.Show(r.Input + " " + r.Output + " " + r.SolutionResult + " " + r.Description);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show(responseMessage.StatusCode.ToString() + ": "
+                            + responseMessage.Content.ReadAsStringAsync().Result);
+                    }
+                }).Start();
         }
 
         private void Details_Click(object sender, RoutedEventArgs e)

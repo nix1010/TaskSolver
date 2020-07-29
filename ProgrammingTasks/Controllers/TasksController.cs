@@ -202,7 +202,7 @@ namespace ProgrammingTasks.Controllers
             }
             else if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.C_SHARP)
             {
-                command = "/C " + binLocation + "\\mainCSharp";                
+                command = "/C " + binLocation + "\\mainCSharp";
             }
             else
             {

@@ -1,6 +1,7 @@
 ﻿<Window x:Class="CodeEditorApplication.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:CodeEditorApplication"
         Title="Code Editor" Height="550" Width="725">
 
     <StackPanel>
@@ -23,6 +24,9 @@
             <Button Click="Details_Click">Details</Button>
         </WrapPanel>
         <RichTextBox Name="rtbEditor" Height="410" Block.LineHeight="2"/>
-        <Button Click="Send_Click" HorizontalAlignment="Right">Send</Button>
+        <WrapPanel HorizontalAlignment="Right">
+            <local:UserControlSpinner x:Name="ucSpinner" Width="24" Visibility="Hidden"/>
+            <Button Click="Send_Click" HorizontalAlignment="Right">Send</Button>
+        </WrapPanel>
     </StackPanel>
 </Window>
