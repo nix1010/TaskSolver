@@ -256,17 +256,6 @@ namespace CodeEditorApplication
             FormUrlEncodedContent content = new FormUrlEncodedContent(body);
             Task<HttpResponseMessage> response = client.PostAsync(url, content);
 
-
-            /*
-            HttpRequestMessage requestMessage = new HttpRequestMessage()
-            {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri(url),
-                Headers = {
-                    {HttpRequestHeader.Authorization.ToString()}
-                }
-            }
-             */
             try
             {
                 statusCode = response.Result.StatusCode;
