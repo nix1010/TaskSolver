@@ -219,7 +219,7 @@ namespace CodeEditorApplication
             }
             else
             {
-                MessageBox.Show(responseMessage.StatusCode + ": " + responseMessage.Content.ReadAsStringAsync().Result);
+                MessageBox.Show(responseMessage.StatusCode + ": Failed to load tasks");
             }
         }
 
