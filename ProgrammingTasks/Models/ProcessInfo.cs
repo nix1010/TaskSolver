@@ -8,7 +8,7 @@ namespace ProgrammingTasks.Models
     public class ProcessInfo
     {
         public int ExitCode { get; set; }
-        public string OutputResult { get; set; }
+        public string Output { get; set; }
         public string Error { get; set; }
     }
 }

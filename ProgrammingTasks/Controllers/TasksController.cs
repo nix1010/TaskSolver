@@ -51,7 +51,7 @@ namespace ProgrammingTasks.Controllers
                 
                 if (taskResult == null) //not found
                 {
-                    ThrowException(HttpStatusCode.NotFound, "Task with id " + id + " not found");
+                    ExceptionHandler.ThrowException(HttpStatusCode.NotFound, "Task with id " + id + " not found");
                 }
 
                 return new TaskDTO() {
@@ -81,7 +81,7 @@ namespace ProgrammingTasks.Controllers
 
                 if (taskResult == null)
                 {
-                    ThrowException(HttpStatusCode.NotFound, "Task with id " + id + " doesn't exist");
+                    ExceptionHandler.ThrowException(HttpStatusCode.NotFound, "Task with id " + id + " doesn't exist");
                 }
 
                 RunResultDTO runResult = RunExamples(taskSolution, taskResult.examples);
@@ -110,17 +110,17 @@ namespace ProgrammingTasks.Controllers
 
             if (compileResult.ExitCode != 0)
             {
-                ThrowException(HttpStatusCode.BadRequest, "Compile error: " + compileResult.Error);
+                ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "Compile error: " + compileResult.Error);
             }
 
             foreach (example example in examples)
             {
-                ProcessInfo result = Run(taskSolution, example);
+                ProcessInfo processInfo = Run(taskSolution, example);
                 string description;
 
-                if (result.ExitCode == 0)
+                if (processInfo.ExitCode == 0)
                 {
-                    if (result.OutputResult == example.output)
+                    if (processInfo.Output == example.output)
                     {
                         runResult.CorrectExamples++;
                         description = "Code runs successfully";
@@ -138,7 +138,7 @@ namespace ProgrammingTasks.Controllers
                 runResult.exampleResults.Add(new ExampleResultDTO() { 
                                                 Input = example.input,
                                                 Output = example.output,                                
-                                                SolutionResult = result.OutputResult + result.Error,
+                                                SolutionResult = processInfo.Output + processInfo.Error,
                                                 Description = description
                                             });
             }
@@ -156,7 +156,7 @@ namespace ProgrammingTasks.Controllers
             {
                 if (taskSolution.Code == null || taskSolution.Code.Trim() == "")
                 {
-                    ThrowException(HttpStatusCode.BadRequest, "Empty file");
+                    ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "Empty file");
                 }
 
                 fileName = codeLocation + "\\Main.java";
@@ -174,7 +174,7 @@ namespace ProgrammingTasks.Controllers
             }
             else
             {
-                ThrowException(HttpStatusCode.BadRequest, "Specified language not supported");
+                ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "Specified language not supported");
             }
            
             //write code to file
@@ -204,7 +204,7 @@ namespace ProgrammingTasks.Controllers
             }
             else
             {
-                ThrowException(HttpStatusCode.NotFound, "Specified language not supported");
+                ExceptionHandler.ThrowException(HttpStatusCode.NotFound, "Specified language not supported");
             }
 
             return RunProcess(command, example.input.Split(';'));
@@ -277,17 +277,7 @@ namespace ProgrammingTasks.Controllers
                 process.Kill();
             }
             
-            return new ProcessInfo() { ExitCode = process.ExitCode, OutputResult = result, Error = error };
-        }
-
-        private void ThrowException(HttpStatusCode statusCode, string message)
-        {
-            HttpResponseMessage responseMessage = new HttpResponseMessage(statusCode)
-            {
-                Content = new StringContent(message)
-            };
-
-            throw new HttpResponseException(responseMessage);
+            return new ProcessInfo() { ExitCode = process.ExitCode, Output = result, Error = error };
         }
     }
 }

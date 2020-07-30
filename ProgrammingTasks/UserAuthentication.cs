@@ -11,6 +11,7 @@ using ProgrammingTasks.Models.Entity;
 using System.Threading;
 using System.Security.Principal;
 using System.Security.Cryptography;
+using ProgrammingTasks.Controllers;
 
 namespace ProgrammingTasks
 {
@@ -21,7 +22,8 @@ namespace ProgrammingTasks
             if (actionContext.Request.Headers.Authorization == null)
             {
                 //if response is set, server immediately returns it
-                actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized, "Credentials not provided");
+                //actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized, "Credentials not provided");
+                ExceptionHandler.ThrowException(HttpStatusCode.Unauthorized, "Credentials not provided");
             }
             else
             {
@@ -43,8 +45,7 @@ namespace ProgrammingTasks
                     }
                     catch (Exception)
                     {
-                        actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Unauthorized, 
-                                                                                                            "Authorization failed");
+                        ExceptionHandler.ThrowException(HttpStatusCode.Unauthorized, "Authorization failed");
                     }
                 }
             }
