@@ -146,8 +146,7 @@ namespace CodeEditorApplication
 
             Dictionary<string, string> headers = new Dictionary<string, string>();
 
-            headers.Add(HttpRequestHeader.Authorization.ToString(),
-                "User " + Convert.ToBase64String(Encoding.UTF8.GetBytes(username + ":" + password)));
+            headers.Add(HttpRequestHeader.Authorization.ToString(), "User " + username + ":" + password);
 
             int selectedIndex = cmbTasks.SelectedIndex + 1;
 

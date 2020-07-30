@@ -74,7 +74,7 @@ namespace ProgrammingTasks.Controllers
 
             using (DBEntities entities = new DBEntities())
             {
-                string username = Thread.CurrentPrincipal.Identity.Name;
+                string username = Thread.CurrentPrincipal.Identity.Name; //get username from authentication
 
                 user userResult = entities.users.First(user => user.username == username);
                 task taskResult = entities.tasks.Find(id);

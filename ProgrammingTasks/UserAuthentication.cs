@@ -26,12 +26,7 @@ namespace ProgrammingTasks
             else
             {
                 string authenticationToken = actionContext.Request.Headers.Authorization.Parameter;
-                string decodedAuthToken = 
-                       Encoding.UTF8.GetString(
-                        Convert.FromBase64CharArray(authenticationToken.ToCharArray(), 0, authenticationToken.Length)
-                        );
-                 
-                string [] credentials = decodedAuthToken.Split(':');
+                string[] credentials = authenticationToken.Split(':');
                 string username = credentials[0];
                 byte[] password = Sha256(credentials[1]);
                 
