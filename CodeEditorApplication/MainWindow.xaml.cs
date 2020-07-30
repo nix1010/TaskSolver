@@ -231,6 +231,8 @@ namespace CodeEditorApplication
         {
             if (e.Key == Key.Tab)
             {
+                e.Handled = true;
+
                 rtbEditor.CaretPosition.InsertTextInRun("\t");
                 rtbEditor.Focus();
             }
