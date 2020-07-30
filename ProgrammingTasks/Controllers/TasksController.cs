@@ -9,6 +9,7 @@ using ProgrammingTasks.Models.Entity;
 using ProgrammingTasks.Models;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 
 namespace ProgrammingTasks.Controllers
 {
@@ -63,6 +64,7 @@ namespace ProgrammingTasks.Controllers
 
         // POST api/tasks/{id}
         [HttpPost]
+        [UserAuthentication]
         public RunResultDTO SendSolution(int id, [FromBody] TaskSolutionDTO taskSolution)
         {
             if (!Directory.Exists(binLocation))
@@ -72,13 +74,9 @@ namespace ProgrammingTasks.Controllers
 
             using (DBEntities entities = new DBEntities())
             {
-                user userResult = entities.users.Single(user => user.username == taskSolution.Username);
+                string username = Thread.CurrentPrincipal.Identity.Name;
 
-                if (userResult == null)
-                {
-                    ThrowException(HttpStatusCode.NotFound, "User doesn't exist");
-                }
-                
+                user userResult = entities.users.First(user => user.username == username);
                 task taskResult = entities.tasks.Find(id);
 
                 if (taskResult == null)
@@ -99,7 +97,7 @@ namespace ProgrammingTasks.Controllers
                                                                     "Code failed at some example(s)"
                                                 });
                 entities.SaveChanges();
-
+                
                 return runResult;
             }
         }

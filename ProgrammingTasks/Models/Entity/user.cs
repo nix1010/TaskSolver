@@ -21,7 +21,7 @@ namespace ProgrammingTasks.Models.Entity
     
         public int id { get; set; }
         public string username { get; set; }
-        public string password { get; set; }
+        public byte[] password { get; set; }
     
         public virtual ICollection<users_solutions> users_solutions { get; set; }
     }

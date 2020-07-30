@@ -14,11 +14,11 @@
             <End Role="tasks" EntitySet="tasks" />
             <End Role="examples" EntitySet="examples" />
           </AssociationSet>
-          <AssociationSet Name="FK__users_sol__task___2F10007B" Association="programming_tasksModel.Store.FK__users_sol__task___2F10007B">
+          <AssociationSet Name="FK__users_sol__task___32E0915F" Association="programming_tasksModel.Store.FK__users_sol__task___32E0915F">
             <End Role="tasks" EntitySet="tasks" />
             <End Role="users_solutions" EntitySet="users_solutions" />
           </AssociationSet>
-          <AssociationSet Name="FK__users_sol__user___2E1BDC42" Association="programming_tasksModel.Store.FK__users_sol__user___2E1BDC42">
+          <AssociationSet Name="FK__users_sol__user___31EC6D26" Association="programming_tasksModel.Store.FK__users_sol__user___31EC6D26">
             <End Role="users" EntitySet="users" />
             <End Role="users_solutions" EntitySet="users_solutions" />
           </AssociationSet>
@@ -46,7 +46,7 @@
           </Key>
           <Property Name="id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
           <Property Name="username" Type="varchar" MaxLength="255" />
-          <Property Name="password" Type="varchar" MaxLength="255" />
+          <Property Name="password" Type="binary" MaxLength="32" />
         </EntityType>
         <EntityType Name="users_solutions">
           <Key>
@@ -55,7 +55,7 @@
           <Property Name="id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
           <Property Name="user_id" Type="int" />
           <Property Name="task_id" Type="int" />
-          <Property Name="code" Type="text" />
+          <Property Name="code" Type="varchar(max)" />
           <Property Name="status" Type="bit" />
           <Property Name="description" Type="varchar" MaxLength="255" />
         </EntityType>
@@ -73,7 +73,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__users_sol__task___2F10007B">
+        <Association Name="FK__users_sol__task___32E0915F">
           <End Role="tasks" Type="programming_tasksModel.Store.tasks" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
           </End>
@@ -87,7 +87,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__users_sol__user___2E1BDC42">
+        <Association Name="FK__users_sol__user___31EC6D26">
           <End Role="users" Type="programming_tasksModel.Store.users" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
           </End>
@@ -106,7 +106,7 @@
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="programming_tasksModel" Alias="Self" p1:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:p1="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
-        <EntityContainer Name="programming_tasksEntities7" p1:LazyLoadingEnabled="true">
+        <EntityContainer Name="programming_tasksEntities" p1:LazyLoadingEnabled="true">
           <EntitySet Name="examples" EntityType="programming_tasksModel.example" />
           <EntitySet Name="tasks" EntityType="programming_tasksModel.task" />
           <EntitySet Name="users" EntityType="programming_tasksModel.user" />
@@ -115,11 +115,11 @@
             <End Role="tasks" EntitySet="tasks" />
             <End Role="examples" EntitySet="examples" />
           </AssociationSet>
-          <AssociationSet Name="FK__users_sol__task___2F10007B" Association="programming_tasksModel.FK__users_sol__task___2F10007B">
+          <AssociationSet Name="FK__users_sol__task___32E0915F" Association="programming_tasksModel.FK__users_sol__task___32E0915F">
             <End Role="tasks" EntitySet="tasks" />
             <End Role="users_solutions" EntitySet="users_solutions" />
           </AssociationSet>
-          <AssociationSet Name="FK__users_sol__user___2E1BDC42" Association="programming_tasksModel.FK__users_sol__user___2E1BDC42">
+          <AssociationSet Name="FK__users_sol__user___31EC6D26" Association="programming_tasksModel.FK__users_sol__user___31EC6D26">
             <End Role="users" EntitySet="users" />
             <End Role="users_solutions" EntitySet="users_solutions" />
           </AssociationSet>
@@ -142,7 +142,7 @@
           <Property Name="title" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
           <Property Name="description" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
           <NavigationProperty Name="examples" Relationship="programming_tasksModel.FK__examples__task_i__145C0A3F" FromRole="tasks" ToRole="examples" />
-          <NavigationProperty Name="users_solutions" Relationship="programming_tasksModel.FK__users_sol__task___2F10007B" FromRole="tasks" ToRole="users_solutions" />
+          <NavigationProperty Name="users_solutions" Relationship="programming_tasksModel.FK__users_sol__task___32E0915F" FromRole="tasks" ToRole="users_solutions" />
         </EntityType>
         <EntityType Name="user">
           <Key>
@@ -150,8 +150,8 @@
           </Key>
           <Property Name="id" Type="Int32" Nullable="false" p1:StoreGeneratedPattern="Identity" />
           <Property Name="username" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
-          <Property Name="password" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
-          <NavigationProperty Name="users_solutions" Relationship="programming_tasksModel.FK__users_sol__user___2E1BDC42" FromRole="users" ToRole="users_solutions" />
+          <Property Name="password" Type="Binary" MaxLength="32" FixedLength="true" />
+          <NavigationProperty Name="users_solutions" Relationship="programming_tasksModel.FK__users_sol__user___31EC6D26" FromRole="users" ToRole="users_solutions" />
         </EntityType>
         <EntityType Name="users_solutions">
           <Key>
@@ -163,8 +163,8 @@
           <Property Name="code" Type="String" MaxLength="Max" Unicode="false" FixedLength="false" />
           <Property Name="status" Type="Boolean" />
           <Property Name="description" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
-          <NavigationProperty Name="task" Relationship="programming_tasksModel.FK__users_sol__task___2F10007B" FromRole="users_solutions" ToRole="tasks" />
-          <NavigationProperty Name="user" Relationship="programming_tasksModel.FK__users_sol__user___2E1BDC42" FromRole="users_solutions" ToRole="users" />
+          <NavigationProperty Name="task" Relationship="programming_tasksModel.FK__users_sol__task___32E0915F" FromRole="users_solutions" ToRole="tasks" />
+          <NavigationProperty Name="user" Relationship="programming_tasksModel.FK__users_sol__user___31EC6D26" FromRole="users_solutions" ToRole="users" />
         </EntityType>
         <Association Name="FK__examples__task_i__145C0A3F">
           <End Role="tasks" Type="programming_tasksModel.task" Multiplicity="0..1">
@@ -180,7 +180,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__users_sol__task___2F10007B">
+        <Association Name="FK__users_sol__task___32E0915F">
           <End Role="tasks" Type="programming_tasksModel.task" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
           </End>
@@ -194,7 +194,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__users_sol__user___2E1BDC42">
+        <Association Name="FK__users_sol__user___31EC6D26">
           <End Role="users" Type="programming_tasksModel.user" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
           </End>
@@ -213,7 +213,7 @@
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
-        <EntityContainerMapping StorageEntityContainer="programming_tasksModelStoreContainer" CdmEntityContainer="programming_tasksEntities7">
+        <EntityContainerMapping StorageEntityContainer="programming_tasksModelStoreContainer" CdmEntityContainer="programming_tasksEntities">
           <EntitySetMapping Name="examples">
             <EntityTypeMapping TypeName="programming_tasksModel.example">
               <MappingFragment StoreEntitySet="examples">

@@ -16,7 +16,7 @@ namespace ProgrammingTasks.Models.Entity
     public partial class DBEntities : DbContext
     {
         public DBEntities()
-            : base("name=DBEntities")
+            : base("name=programming_tasksEntities")
         {
         }
     

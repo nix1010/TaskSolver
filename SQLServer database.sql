@@ -1,6 +1,3 @@
-DROP DATABASE programming_tasks;
-GO
-
 CREATE DATABASE programming_tasks;
 GO
 
@@ -10,7 +7,7 @@ GO
 CREATE TABLE users(
 	id INT IDENTITY(1, 1),
 	username VARCHAR(255),
-	password VARCHAR(255),
+	password VARCHAR(512),
 	PRIMARY KEY(id)
 );
 GO
@@ -49,7 +46,6 @@ CREATE TABLE users_solutions(
 INSERT INTO tasks (title, description) VALUES('Najveci element', 'Napisati funkciju koja ce prihvatiti dva paremtra i vratiti veci element');
 INSERT INTO tasks (title, description) VALUES('Najmanji element', 'Napisati funkciju koja ce prihvatiti dva paremtra i vratiti manji element');
 
-
 -- examples DATA
 INSERT INTO examples (task_id, input, output) VALUES(1, '1;2', '2');
 INSERT INTO examples (task_id, input, output) VALUES(1, '45;7', '45');
@@ -58,13 +54,20 @@ INSERT INTO examples (task_id, input, output) VALUES(2, '7;14', '7');
 INSERT INTO examples (task_id, input, output) VALUES(2, '-9;12', '-9');
 INSERT INTO examples (task_id, input, output) VALUES(2, '63;15', '15');
 
-
 -- users DATA
-INSERT INTO users (username, password) VALUES('user1', 'user1');
-INSERT INTO users (username, password) VALUES('user2', 'user2');
-
+INSERT INTO users (username, password) VALUES('user1', HASHBYTES('SHA2_256', 'user1'));
+INSERT INTO users (username, password) VALUES('user2', HASHBYTES('SHA2_256', 'user2'));
 
 SELECT * FROM tasks;
+SELECT * FROM users;
+SELECT * FROM users_solutions;
 exec sp_columns users;
 
-SELECT * FROM users_solutions;
+
+
+UPDATE users SET password = HASHBYTES('SHA2_256', 'user2') WHERE username = 'user2';
+
+SELECT HASHBYTES('SHA2_256', 'user1');
+
+ALTER TABLE users DROP COLUMN password;
+ALTER TABLE users ADD password VARCHAR(512);

@@ -43,6 +43,9 @@ namespace CodeEditorApplication
             cmbProgrammingLanguage.ItemsSource = Enum.GetValues(typeof(ProgrammingLanguage));
 
             username = password = "user1";
+
+            //password = Sha256(password);
+
             New_Click(null, null);
         }
 
@@ -138,10 +141,13 @@ namespace CodeEditorApplication
 
             Dictionary<string, string> body = new Dictionary<string, string>();
 
-            body.Add("username", username);
-            body.Add("password", password);
             body.Add("ProgrammingLanguage", cmbProgrammingLanguage.SelectedItem.ToString());
             body.Add("Code", new TextRange(rtbEditor.Document.ContentStart, rtbEditor.Document.ContentEnd).Text);
+
+            Dictionary<string, string> headers = new Dictionary<string, string>();
+
+            headers.Add(HttpRequestHeader.Authorization.ToString(),
+                "User " + Convert.ToBase64String(Encoding.UTF8.GetBytes(username + ":" + password)));
 
             int selectedIndex = cmbTasks.SelectedIndex + 1;
 
@@ -150,7 +156,7 @@ namespace CodeEditorApplication
             //don't block current thread
             new Thread(() =>
                 {
-                    HttpResponseMessage responseMessage = PostRequest(host + "/api/tasks/" + selectedIndex, body);
+                    HttpResponseMessage responseMessage = PostRequest(host + "/api/tasks/" + selectedIndex, body, headers);
 
                     Dispatcher.Invoke(new Action(() => { ucSpinner.Visibility = System.Windows.Visibility.Hidden; }));
 
@@ -158,19 +164,21 @@ namespace CodeEditorApplication
                     {
                         string responseText = responseMessage.Content.ReadAsStringAsync().Result;
 
+                        MessageBox.Show(responseText);
                         RunResult runResult = JsonConvert.DeserializeObject<RunResult>(responseText);
 
-                        MessageBox.Show("Correct: " + runResult.CorrectExamples);
-
+                        MessageBox.Show("Correct: " + runResult.CorrectExamples, "Result");
+                        /*
                         foreach (ExampleResult r in runResult.exampleResults)
                         {
-                            MessageBox.Show(r.Input + " " + r.Output + " " + r.SolutionResult + " " + r.Description);
+                            MessageBox.Show(r.Input + " " + r.Output + " " + r.SolutionResult + " " + r.Description, "Result");
                         }
+                        */
                     }
                     else
                     {
                         MessageBox.Show(responseMessage.StatusCode.ToString() + ": "
-                            + responseMessage.Content.ReadAsStringAsync().Result);
+                            + responseMessage.Content.ReadAsStringAsync().Result, "Error");
                     }
 
                 }).Start();
@@ -232,16 +240,34 @@ namespace CodeEditorApplication
 
         #region----- HTTP Requests -----
 
-        private HttpResponseMessage PostRequest(string url, Dictionary<string, string> body)
+        private HttpResponseMessage PostRequest(string url, Dictionary<string, string> body, Dictionary<string, string> headers = null)
         {
             HttpClient client = new HttpClient();
-
             HttpStatusCode statusCode;
             string responseText;
 
+            if (headers != null)
+            {
+                foreach (KeyValuePair<string, string> header in headers)
+                {
+                    client.DefaultRequestHeaders.TryAddWithoutValidation(header.Key, header.Value);
+                }
+            }
+            
             FormUrlEncodedContent content = new FormUrlEncodedContent(body);
             Task<HttpResponseMessage> response = client.PostAsync(url, content);
 
+
+            /*
+            HttpRequestMessage requestMessage = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(url),
+                Headers = {
+                    {HttpRequestHeader.Authorization.ToString()}
+                }
+            }
+             */
             try
             {
                 statusCode = response.Result.StatusCode;
@@ -256,13 +282,20 @@ namespace CodeEditorApplication
             return new HttpResponseMessage(statusCode) { Content = new StringContent(responseText) };
         }
 
-        private HttpResponseMessage GetRequest(string url)
+        private HttpResponseMessage GetRequest(string url, Dictionary<string, string> headers = null)
         {
             HttpClient client = new HttpClient();
-
             HttpStatusCode statusCode;
-            string responseText = "";
+            string responseText;
 
+            if (headers != null)
+            {
+                foreach (KeyValuePair<string, string> header in headers)
+                {
+                    client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                }
+            }
+            
             Task<HttpResponseMessage> response = client.GetAsync(url);
             
             try
