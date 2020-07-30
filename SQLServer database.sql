@@ -7,7 +7,7 @@ GO
 CREATE TABLE users(
 	id INT IDENTITY(1, 1),
 	username VARCHAR(255),
-	password VARCHAR(512),
+	password BINARY(32), -- SHA256 size 32
 	PRIMARY KEY(id)
 );
 GO
@@ -61,13 +61,5 @@ INSERT INTO users (username, password) VALUES('user2', HASHBYTES('SHA2_256', 'us
 SELECT * FROM tasks;
 SELECT * FROM users;
 SELECT * FROM users_solutions;
+SELECT COUNT(id) FROM users_solutions;
 exec sp_columns users;
-
-
-
-UPDATE users SET password = HASHBYTES('SHA2_256', 'user2') WHERE username = 'user2';
-
-SELECT HASHBYTES('SHA2_256', 'user1');
-
-ALTER TABLE users DROP COLUMN password;
-ALTER TABLE users ADD password VARCHAR(512);
