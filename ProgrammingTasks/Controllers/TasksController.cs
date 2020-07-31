@@ -10,19 +10,26 @@ using ProgrammingTasks.Models;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Web;
 
 namespace ProgrammingTasks.Controllers
 {
     public class TasksController : ApiController
     {
-        private const string codeLocation = "C:\\users\\nikola\\desktop\\code";
-        private const string binLocation = codeLocation + "\\bin";
+        private readonly string codeLocation;
+        private readonly string binLocation;
+
+        public TasksController()
+        {
+            this.codeLocation = HttpRuntime.AppDomainAppPath + "code";
+            this.binLocation = codeLocation + "\\bin";
+        }
 
         // GET api/tasks
         [HttpGet]
         public List<TaskDTO> GetTasks()
         {
-            using (DBEntities entitities = new DBEntities())
+            using (programming_tasksEntities entitities = new programming_tasksEntities())
             {
                 List<TaskDTO> tasksDTO = new List<TaskDTO>();
                 List<task> tasks = entitities.tasks.ToList();
@@ -45,7 +52,7 @@ namespace ProgrammingTasks.Controllers
         [HttpGet]
         public TaskDTO GetTask(int id)
         {
-            using (DBEntities entitities = new DBEntities())
+            using (programming_tasksEntities entitities = new programming_tasksEntities())
             {
                 task taskResult = entitities.tasks.Find(id);
                 
@@ -72,7 +79,7 @@ namespace ProgrammingTasks.Controllers
                 Directory.CreateDirectory(binLocation);
             }
 
-            using (DBEntities entities = new DBEntities())
+            using (programming_tasksEntities entities = new programming_tasksEntities())
             {
                 string username = Thread.CurrentPrincipal.Identity.Name; //get username from authentication
 
@@ -106,7 +113,7 @@ namespace ProgrammingTasks.Controllers
         {
             RunResultDTO runResult = new RunResultDTO();
 
-            ProcessInfo compileResult = Compile(taskSolution);
+            ProcessResult compileResult = Compile(taskSolution);
 
             if (compileResult.ExitCode != 0)
             {
@@ -115,7 +122,7 @@ namespace ProgrammingTasks.Controllers
 
             foreach (example example in examples)
             {
-                ProcessInfo processInfo = Run(taskSolution, example);
+                ProcessResult processInfo = Run(taskSolution, example);
                 string description;
 
                 if (processInfo.ExitCode == 0)
@@ -146,7 +153,7 @@ namespace ProgrammingTasks.Controllers
             return runResult;
         }
 
-        private ProcessInfo Compile(TaskSolutionDTO taskSolution)
+        private ProcessResult Compile(TaskSolutionDTO taskSolution)
         {
             string fileName = "";
             string command = "";
@@ -186,7 +193,7 @@ namespace ProgrammingTasks.Controllers
             return RunProcess(command);
         }
 
-        private ProcessInfo Run(TaskSolutionDTO taskSolution, example example)
+        private ProcessResult Run(TaskSolutionDTO taskSolution, example example)
         {
             string command = "";
 
@@ -210,7 +217,7 @@ namespace ProgrammingTasks.Controllers
             return RunProcess(command, example.input.Split(';'));
         }
 
-        private ProcessInfo RunProcess(string argument, string[] inputs = null)
+        private ProcessResult RunProcess(string argument, string[] inputs = null)
         {
             string result = "";
             string error = "";
@@ -277,7 +284,7 @@ namespace ProgrammingTasks.Controllers
                 process.Kill();
             }
             
-            return new ProcessInfo() { ExitCode = process.ExitCode, Output = result, Error = error };
+            return new ProcessResult() { ExitCode = process.ExitCode, Output = result, Error = error };
         }
     }
 }

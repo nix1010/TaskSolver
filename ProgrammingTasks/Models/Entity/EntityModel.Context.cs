@@ -13,9 +13,9 @@ namespace ProgrammingTasks.Models.Entity
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class DBEntities : DbContext
+    public partial class programming_tasksEntities : DbContext
     {
-        public DBEntities()
+        public programming_tasksEntities()
             : base("name=programming_tasksEntities")
         {
         }

@@ -201,7 +201,7 @@
     <Compile Include="Models\API\RunResultDTO.cs" />
     <Compile Include="Models\API\TaskDTO.cs" />
     <Compile Include="Models\API\TaskSolutionDTO.cs" />
-    <Compile Include="Models\ProcessInfo.cs" />
+    <Compile Include="Models\ProcessResult.cs" />
     <Compile Include="Models\ProgrammingLanguage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

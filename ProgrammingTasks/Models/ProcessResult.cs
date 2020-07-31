@@ -5,7 +5,7 @@ using System.Web;
 
 namespace ProgrammingTasks.Models
 {
-    public class ProcessInfo
+    public class ProcessResult
     {
         public int ExitCode { get; set; }
         public string Output { get; set; }

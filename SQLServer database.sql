@@ -6,7 +6,7 @@ GO
 
 CREATE TABLE users(
 	id INT IDENTITY(1, 1),
-	username VARCHAR(255),
+	username VARCHAR(255) UNIQUE,
 	password BINARY(32), -- SHA256 size 32
 	PRIMARY KEY(id)
 );

@@ -31,8 +31,8 @@ namespace ProgrammingTasks
                 string[] credentials = authenticationToken.Split(':');
                 string username = credentials[0];
                 byte[] password = Sha256(credentials[1]);
-                
-                using (DBEntities entities = new DBEntities())
+
+                using (programming_tasksEntities entities = new programming_tasksEntities())
                 {
                     user userResult = null;
 
