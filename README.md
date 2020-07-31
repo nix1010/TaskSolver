@@ -15,5 +15,5 @@ It consists of two parts:
 - Run SQLServer database.sql
 - Change server configuration `source=your-sql-server-name;` in **ProgrammingTasks/Web.config** at:
 ```
-  <add name="DBEntities" connectionString="metadata=res://*/Models.Entity.EntityModel.csdl|res://*/Models.Entity.EntityModel.ssdl|res://*/Models.Entity.EntityModel.msl;provider=System.Data.SqlClient;provider connection string=&quot;data source=your-sql-server-name;initial catalog=programming_tasks;integrated security=True;MultipleActiveResultSets=True;App=EntityFramework&quot;" providerName="System.Data.EntityClient" />
+  <add name="programming_tasksEntities" connectionString="metadata=res://*/Models.Entity.EntityModel.csdl|res://*/Models.Entity.EntityModel.ssdl|res://*/Models.Entity.EntityModel.msl;provider=System.Data.SqlClient;provider connection string=&quot;data source=your-sql-server-name;initial catalog=programming_tasks;integrated security=True;MultipleActiveResultSets=True;App=EntityFramework&quot;" providerName="System.Data.EntityClient" />
 ```
