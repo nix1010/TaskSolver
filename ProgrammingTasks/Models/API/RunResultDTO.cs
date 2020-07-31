@@ -8,6 +8,11 @@ namespace ProgrammingTasks.Models.API
     public class RunResultDTO
     {
         public int CorrectExamples { get; set; }
-        public List<ExampleResultDTO> exampleResults = new List<ExampleResultDTO>();
+        public List<ExampleResultDTO> exampleResults;
+
+        public RunResultDTO()
+        {
+            this.exampleResults = new List<ExampleResultDTO>();
+        }
     }
 }
