@@ -1,0 +1,22 @@
+﻿<Window x:Class="CodeEditorApplication.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Login" Height="320" Width="300"
+        Background="Transparent"
+        AllowsTransparency="True"
+        WindowStyle="None" ResizeMode="NoResize"
+        MouseDown="Window_MouseDown">
+    
+    <Border Background="#2e3137" CornerRadius="10" >
+        <StackPanel Margin="20">
+            <Label Foreground="White" FontSize="25" HorizontalAlignment="Center">Login</Label>
+            <Separator></Separator>
+            <Label Foreground="White">Username</Label>
+            <TextBox Name="txtBoxUsername" Background="#545d6a" Foreground="White" FontSize="18" />
+            <Label Foreground="White">Password</Label>
+            <PasswordBox Name="passwordBox" Background="#545d6a" Foreground="White" FontSize="18" />
+            <Button Name="btnSubmit" Click="Submit_Click" Margin="60 10" Content="Submit" Background="#545d6a" Foreground="White"/>
+            <Button Name="btnCancel" Click="Cancel_Click" Margin="60 10" Content="Cancel" Background="#545d6a" Foreground="White"/>
+        </StackPanel>
+    </Border>
+</Window>

@@ -34,7 +34,6 @@ namespace CodeEditorApplication
 
         public MainWindow()
         {
-            
             InitializeComponent();
             
             this.KeyDown += new KeyEventHandler(MainWindow_TabKeyDown);
@@ -42,16 +41,19 @@ namespace CodeEditorApplication
             
             cmbProgrammingLanguage.ItemsSource = Enum.GetValues(typeof(ProgrammingLanguage));
 
-            username = password = "user1";
+            username = password = null;
 
-            //password = Sha256(password);
-
-            New_Click(null, null);
+            NewDocument();
         }
 
         #region----- Button Events -----
 
         private void New_Click(object sender, RoutedEventArgs e)
+        {
+            NewDocument();
+        }
+
+        private void NewDocument()
         {
             fileName = null;
             rtbEditor.Document.Blocks.Clear();
@@ -127,9 +129,17 @@ namespace CodeEditorApplication
 
         private void Send_Click(object sender, RoutedEventArgs e)
         {
+            if (username == null || password == null)
+            {
+                if (!ShowLoginWindow())
+                {
+                    return;
+                }
+            }
+
             if (cmbProgrammingLanguage.SelectedIndex == -1)
             {
-                MessageBox.Show("Please select langauge", "Warning");
+                MessageBox.Show("Please select language", "Warning");
                 return;
             }
 
@@ -153,34 +163,82 @@ namespace CodeEditorApplication
             ucSpinner.Visibility = System.Windows.Visibility.Visible;
 
             //don't block current thread
-            new Thread(() =>
+            Thread thread = new Thread(() =>
+            {
+                HttpResponseMessage responseMessage = PostRequest(host + "/api/tasks/" + selectedIndex, body, headers);
+
+                Dispatcher.Invoke(new Action(() => { ucSpinner.Visibility = System.Windows.Visibility.Hidden; }));
+
+                if (responseMessage.StatusCode == HttpStatusCode.OK)
                 {
-                    HttpResponseMessage responseMessage = PostRequest(host + "/api/tasks/" + selectedIndex, body, headers);
+                    string responseText = responseMessage.Content.ReadAsStringAsync().Result;
 
-                    Dispatcher.Invoke(new Action(() => { ucSpinner.Visibility = System.Windows.Visibility.Hidden; }));
+                    MessageBox.Show(responseText);
+                    RunResult runResult = JsonConvert.DeserializeObject<RunResult>(responseText);
 
-                    if (responseMessage.StatusCode == HttpStatusCode.OK)
+                    MessageBox.Show("Correct: " + runResult.CorrectExamples, "Result");
+                    /*
+                    foreach (ExampleResult r in runResult.exampleResults)
                     {
-                        string responseText = responseMessage.Content.ReadAsStringAsync().Result;
-
-                        MessageBox.Show(responseText);
-                        RunResult runResult = JsonConvert.DeserializeObject<RunResult>(responseText);
-
-                        MessageBox.Show("Correct: " + runResult.CorrectExamples, "Result");
-                        /*
-                        foreach (ExampleResult r in runResult.exampleResults)
-                        {
-                            MessageBox.Show(r.Input + " " + r.Output + " " + r.SolutionResult + " " + r.Description, "Result");
-                        }
-                        */
+                        MessageBox.Show(r.Input + " " + r.Output + " " + r.SolutionResult + " " + r.Description, "Result");
                     }
-                    else
+                    */
+                }
+                else
+                {
+                    if (responseMessage.StatusCode == HttpStatusCode.Unauthorized)
                     {
-                        MessageBox.Show(responseMessage.StatusCode.ToString() + ": "
-                            + responseMessage.Content.ReadAsStringAsync().Result, "Error");
+                        username = password = null;
                     }
 
-                }).Start();
+                    MessageBox.Show(responseMessage.StatusCode.ToString() + ": "
+                        + responseMessage.Content.ReadAsStringAsync().Result, "Error");
+                }
+
+            });
+
+            thread.IsBackground = true;
+            thread.Start();
+        }
+        
+        private void Login_Click(object sender, RoutedEventArgs e)
+        {
+            if (ShowLoginWindow())
+            {
+                MenuItem menuItem = new MenuItem()
+                {
+                    Header = "_Logout",
+                    Name = "Logout"
+                };
+
+                menuItem.Click += Logout_Click;
+
+                _User.Items.Add(menuItem);
+            }
+        }
+
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            username = password = null;
+
+            _User.Items.RemoveAt(_User.Items.Count - 1);
+        }
+
+        private bool ShowLoginWindow()
+        {
+            LoginWindow loginWindow = new LoginWindow();
+
+            loginWindow.ShowDialog();
+            
+            bool submitted = loginWindow.IsSubmitted();
+            
+            if (submitted)
+            {
+                username = loginWindow.txtBoxUsername.Text;
+                password = loginWindow.passwordBox.Password;
+            }
+            
+            return submitted;
         }
 
         private void Details_Click(object sender, RoutedEventArgs e)
@@ -197,7 +255,8 @@ namespace CodeEditorApplication
         private void MainWindow_Loaded(object sender, EventArgs e)
         {
             Thread thread = new Thread(PopulateTasks);
-
+            
+            thread.IsBackground = true;
             thread.Start(); 
         }
 
@@ -213,8 +272,15 @@ namespace CodeEditorApplication
 
                 for (int i = 0; i < tasks.Count; ++i)
                 {
-                    // force WPF to render UI elemnts
-                    Dispatcher.Invoke(new Action(() => { cmbTasks.Items.Add(tasks[i].Title); }));
+                    try
+                    {
+                        // force WPF to render UI elemnts
+                        Dispatcher.Invoke(new Action(() => { cmbTasks.Items.Add(tasks[i].Title); }));
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        break;
+                    }
                 }
             }
             else
@@ -233,8 +299,7 @@ namespace CodeEditorApplication
             {
                 e.Handled = true;
 
-                rtbEditor.CaretPosition.InsertTextInRun("\t");
-                rtbEditor.Focus();
+                rtbEditor.CaretPosition.InsertTextInRun("\t");   
             }
         }
         #endregion

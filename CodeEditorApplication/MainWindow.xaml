@@ -11,7 +11,11 @@
                 <MenuItem Header="_Open" Name="Open" Click="Open_Click" />
                 <MenuItem Header="_Save" Name="Save" Click="Save_Click" />
                 <MenuItem Header="_Save As" Name="SaveAs" Click="SaveAs_Click" />
+                <Separator/>
                 <MenuItem Header="E_xit" Name="exit" Click="Exit_Click" />
+            </MenuItem>
+            <MenuItem Header="_User" Name="_User">
+                <MenuItem Header="_Login" Name="Login" Click="Login_Click"/>
             </MenuItem>
         </Menu>
         <WrapPanel>
