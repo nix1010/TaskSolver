@@ -5,7 +5,8 @@
         Background="Transparent"
         AllowsTransparency="True"
         WindowStyle="None" ResizeMode="NoResize"
-        MouseDown="Window_MouseDown">
+        MouseDown="Window_MouseDown"
+        KeyDown="Window_KeyDown">
     
     <Border Background="#2e3137" CornerRadius="10" >
         <StackPanel Margin="20">

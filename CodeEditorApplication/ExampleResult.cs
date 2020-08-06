@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CodeEditorApplication
 {
-    class ExampleResult
+    public class ExampleResult
     {
         public string Input { get; set; }
         public string Output { get; set; }

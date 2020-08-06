@@ -2,10 +2,22 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:CodeEditorApplication"
-        Title="Code Editor" Height="550" Width="725">
+        Title="Code Editor" Height="600" Width="800"
+        MinWidth="350">
 
-    <StackPanel>
-        <Menu>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="23"/>
+            <RowDefinition Height="35"/>
+            <RowDefinition Height="35"/>
+            <RowDefinition Height="35"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        
+        <Menu Grid.Row="0" Name="Menu">
             <MenuItem Header="_File" >
                 <MenuItem Header="_New" Name="New" Click="New_Click" />
                 <MenuItem Header="_Open" Name="Open" Click="Open_Click" />
@@ -14,23 +26,21 @@
                 <Separator/>
                 <MenuItem Header="E_xit" Name="exit" Click="Exit_Click" />
             </MenuItem>
-            <MenuItem Header="_User" Name="_User">
-                <MenuItem Header="_Login" Name="Login" Click="Login_Click"/>
-            </MenuItem>
         </Menu>
-        <WrapPanel>
+        
+        <WrapPanel Grid.Row="1" Margin="3">
+            <Label>Task</Label>
+            <ComboBox Name="cmbTasks" Width="205"></ComboBox>
+            <Button Margin="10 0" Click="Details_Click">Description</Button>
+        </WrapPanel>
+        <WrapPanel Grid.Row="2" Margin="3">
             <Label>Programming Language</Label>
             <ComboBox Name="cmbProgrammingLanguage" Width="100"></ComboBox>
         </WrapPanel>
-        <WrapPanel>
-            <Label>Task</Label>
-            <ComboBox Name="cmbTasks" Width="200"></ComboBox>
-            <Button Click="Details_Click">Details</Button>
+        <WrapPanel Grid.Row="3" Margin="5">
+            <Button Click="Send_Click">Send Solution</Button>
+            <local:UserControlSpinner x:Name="ucSpinner" Margin="10 0" Visibility="Hidden"/>
         </WrapPanel>
-        <RichTextBox Name="rtbEditor" Height="410" Block.LineHeight="2"/>
-        <WrapPanel HorizontalAlignment="Right">
-            <local:UserControlSpinner x:Name="ucSpinner" Width="24" Visibility="Hidden"/>
-            <Button Click="Send_Click" HorizontalAlignment="Right">Send</Button>
-        </WrapPanel>
-    </StackPanel>
+        <RichTextBox Grid.Row="4" x:Name="rtbEditor" Block.LineHeight="2" VerticalScrollBarVisibility="Auto"/>
+    </Grid>
 </Window>

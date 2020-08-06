@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CodeEditorApplication
 {
-    class RunResult
+    public class RunResult
     {
         public int CorrectExamples { get; set; }
         public List<ExampleResult> exampleResults = new List<ExampleResult>();

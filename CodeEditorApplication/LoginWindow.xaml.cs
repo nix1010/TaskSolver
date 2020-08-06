@@ -26,6 +26,8 @@ namespace CodeEditorApplication
             InitializeComponent();
 
             this.submitted = false;
+
+            txtBoxUsername.Focus();
         }
 
         public bool IsSubmitted()
@@ -49,6 +51,14 @@ namespace CodeEditorApplication
             if (e.LeftButton == MouseButtonState.Pressed)
             {
                 DragMove();
+            }
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                Submit_Click(sender, new RoutedEventArgs(e.RoutedEvent));
             }
         }
     }

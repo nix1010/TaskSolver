@@ -46,6 +46,12 @@ namespace CodeEditorApplication
             NewDocument();
         }
 
+        private MessageBoxResult MessageBoxCentered(string messageBoxText, string caption)
+        {
+            MessageBoxCenterer.PrepToCenterMessageBoxOnWindow(this);
+            return MessageBox.Show(messageBoxText, caption);
+        }
+
         #region----- Button Events -----
 
         private void New_Click(object sender, RoutedEventArgs e)
@@ -137,15 +143,15 @@ namespace CodeEditorApplication
                 }
             }
 
-            if (cmbProgrammingLanguage.SelectedIndex == -1)
-            {
-                MessageBox.Show("Please select language", "Warning");
-                return;
-            }
-
             if (cmbTasks.SelectedIndex == -1)
             {
-                MessageBox.Show("Please select task", "Warning");
+                MessageBoxCentered("Please select task", "Warning");
+                return;
+            } 
+            
+            if (cmbProgrammingLanguage.SelectedIndex == -1)
+            {
+                MessageBoxCentered("Please select programming language", "Warning");
                 return;
             }
 
@@ -168,31 +174,37 @@ namespace CodeEditorApplication
                 HttpResponseMessage responseMessage = PostRequest(host + "/api/tasks/" + selectedIndex, body, headers);
 
                 Dispatcher.Invoke(new Action(() => { ucSpinner.Visibility = System.Windows.Visibility.Hidden; }));
-
+                
+                string responseText = responseMessage.Content.ReadAsStringAsync().Result;
+                
                 if (responseMessage.StatusCode == HttpStatusCode.OK)
                 {
-                    string responseText = responseMessage.Content.ReadAsStringAsync().Result;
-
-                    MessageBox.Show(responseText);
                     RunResult runResult = JsonConvert.DeserializeObject<RunResult>(responseText);
 
-                    MessageBox.Show("Correct: " + runResult.CorrectExamples, "Result");
-                    /*
-                    foreach (ExampleResult r in runResult.exampleResults)
+                    Dispatcher.Invoke(new Action(() =>
                     {
-                        MessageBox.Show(r.Input + " " + r.Output + " " + r.SolutionResult + " " + r.Description, "Result");
-                    }
-                    */
+                        ResultWindow resultWindow = new ResultWindow();
+
+                        //center
+                        resultWindow.Top = this.Top + (this.Height - resultWindow.Height) / 2;
+                        resultWindow.Left = this.Left + (this.Width - resultWindow.Width) / 2;
+
+                        resultWindow.PopulateWindow(runResult);
+                        
+                        resultWindow.Show();
+                    }));
                 }
                 else
                 {
                     if (responseMessage.StatusCode == HttpStatusCode.Unauthorized)
                     {
-                        username = password = null;
+                        Dispatcher.Invoke(new Action(() =>
+                        {
+                            Logout();
+                        }));
                     }
 
-                    MessageBox.Show(responseMessage.StatusCode.ToString() + ": "
-                        + responseMessage.Content.ReadAsStringAsync().Result, "Error");
+                    MessageBoxCentered(responseMessage.StatusCode.ToString(), "Error");
                 }
 
             });
@@ -200,34 +212,27 @@ namespace CodeEditorApplication
             thread.IsBackground = true;
             thread.Start();
         }
-        
-        private void Login_Click(object sender, RoutedEventArgs e)
-        {
-            if (ShowLoginWindow())
-            {
-                MenuItem menuItem = new MenuItem()
-                {
-                    Header = "_Logout",
-                    Name = "Logout"
-                };
-
-                menuItem.Click += Logout_Click;
-
-                _User.Items.Add(menuItem);
-            }
-        }
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
+            Logout();
+        }
+
+        private void Logout()
+        {
             username = password = null;
 
-            _User.Items.RemoveAt(_User.Items.Count - 1);
+            Menu.Items.RemoveAt(Menu.Items.Count - 1);
         }
 
         private bool ShowLoginWindow()
         {
             LoginWindow loginWindow = new LoginWindow();
 
+            //center
+            loginWindow.Top = this.Top + (this.Height - loginWindow.Height) / 2;
+            loginWindow.Left = this.Left + (this.Width - loginWindow.Width) / 2;
+            
             loginWindow.ShowDialog();
             
             bool submitted = loginWindow.IsSubmitted();
@@ -236,6 +241,16 @@ namespace CodeEditorApplication
             {
                 username = loginWindow.txtBoxUsername.Text;
                 password = loginWindow.passwordBox.Password;
+
+                MenuItem menuItem = new MenuItem()
+                {
+                    Header = "_Logout",
+                    Name = "Logout"
+                };
+
+                menuItem.Click += Logout_Click;
+
+                Menu.Items.Add(menuItem);
             }
             
             return submitted;
@@ -245,7 +260,7 @@ namespace CodeEditorApplication
         {
             if (cmbTasks.SelectedIndex != -1)
             {
-                MessageBox.Show(tasks[cmbTasks.SelectedIndex].Description, tasks[cmbTasks.SelectedIndex].Title);
+                MessageBoxCentered(tasks[cmbTasks.SelectedIndex].Description, tasks[cmbTasks.SelectedIndex].Title);
             }
         }
         #endregion
@@ -285,7 +300,7 @@ namespace CodeEditorApplication
             }
             else
             {
-                MessageBox.Show(responseMessage.StatusCode + ": Failed to load tasks");
+                MessageBoxCentered("Failed to obtain tasks", responseMessage.StatusCode.ToString());
             }
         }
 
