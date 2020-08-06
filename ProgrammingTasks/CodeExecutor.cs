@@ -35,7 +35,7 @@ namespace ProgrammingTasks
 
             if (processResult.ExitCode != 0)
             {
-                ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "Compile error: " + processResult.Error);
+                ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "Compile error"/* + processResult.Error*/);
             }
 
             foreach (example example in examples)

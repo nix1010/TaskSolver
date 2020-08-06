@@ -204,7 +204,8 @@ namespace CodeEditorApplication
                         }));
                     }
 
-                    MessageBoxCentered(responseMessage.StatusCode.ToString(), "Error");
+                    
+                    MessageBoxCentered(JsonConvert.DeserializeObject<Dictionary<string, string>>(responseText)["Message"], "Error");
                 }
 
             });
