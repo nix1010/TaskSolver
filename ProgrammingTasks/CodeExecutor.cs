@@ -29,13 +29,19 @@ namespace ProgrammingTasks
 
         public RunResultDTO RunExamples(TaskSolutionDTO taskSolution, ICollection<example> examples)
         {
+            if (taskSolution == null)
+            {
+                ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "No body provided");
+            }
+
             RunResultDTO runResult = new RunResultDTO();
 
             ProcessResult processResult = Compile(taskSolution);
 
             if (processResult.ExitCode != 0)
             {
-                ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "Compile error"/* + processResult.Error*/);
+                ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "Compile error " + 
+                    processResult.Error.Replace(codeLocation, ""));
             }
 
             foreach (example example in examples)
@@ -65,7 +71,7 @@ namespace ProgrammingTasks
                 {
                     Input = example.input,
                     Output = example.output,
-                    SolutionResult = processResult.Output + processResult.Error,
+                    SolutionResult = processResult.Output + processResult.Error.Replace(binLocation, ""),
                     Description = description
                 });
             }

@@ -18,6 +18,9 @@ using Microsoft.Win32;
 using Newtonsoft.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Highlighting;
+using System.Reflection;
 
 namespace CodeEditorApplication
 {
@@ -27,6 +30,7 @@ namespace CodeEditorApplication
     public partial class MainWindow : Window
     {
         private string fileName;
+        private string currentFileContent;
         private string username;
         private string password;
         private const string host = "http://localhost:50791/";
@@ -35,11 +39,9 @@ namespace CodeEditorApplication
         public MainWindow()
         {
             InitializeComponent();
-            
-            this.KeyDown += new KeyEventHandler(MainWindow_TabKeyDown);
-            this.Loaded += new RoutedEventHandler(MainWindow_Loaded);
-            
-            cmbProgrammingLanguage.ItemsSource = Enum.GetValues(typeof(ProgrammingLanguage));
+
+            cmbProgrammingLanguage.ItemsSource =
+                typeof(ProgrammingLanguage).GetFields().Select(element => element.GetValue(null).ToString());
 
             username = password = null;
 
@@ -49,6 +51,7 @@ namespace CodeEditorApplication
         private MessageBoxResult MessageBoxCentered(string messageBoxText, string caption)
         {
             MessageBoxCenterer.PrepToCenterMessageBoxOnWindow(this);
+            
             return MessageBox.Show(messageBoxText, caption);
         }
 
@@ -62,7 +65,10 @@ namespace CodeEditorApplication
         private void NewDocument()
         {
             fileName = null;
-            rtbEditor.Document.Blocks.Clear();
+            avalonEdit.Clear();
+            currentFileContent = avalonEdit.Text;
+
+            UpdateFileName();
         }
 
         private void Open_Click(object sender, RoutedEventArgs e)
@@ -71,26 +77,40 @@ namespace CodeEditorApplication
             
             if (openDialog.ShowDialog() == true)
             {
-                using (FileStream fileStream = new FileStream(openDialog.FileName, FileMode.Open))
+                using (StreamReader streamReader = new StreamReader(openDialog.FileName))
                 {
-                    TextRange textRange = new TextRange(rtbEditor.Document.ContentStart, rtbEditor.Document.ContentEnd);
+                    string content = "";
 
-                    textRange.Load(fileStream, DataFormats.Text);
+                    while (!streamReader.EndOfStream)
+                    {
+                        if (content.Length > 0)
+                        {
+                            content += '\n';
+                        }
+
+                        content += streamReader.ReadLine();
+                    }
+
+                    avalonEdit.Text = currentFileContent = content;
+                    fileName = openDialog.FileName;
+                    
+                    UpdateFileName();
+                    SetLanguage(System.IO.Path.GetExtension(fileName));
                 }
-                
-                fileName = openDialog.FileName;
-                
-                SetLanguage(System.IO.Path.GetExtension(fileName));
             }
         }
 
         private void SetLanguage(string extension)
         {
-            switch (extension)
+            foreach (FieldInfo fieldInfo in typeof(ProgrammingLanguage).GetFields())
             {
-                case ".cpp": cmbProgrammingLanguage.SelectedValue = ProgrammingLanguage.C_PLUS_PLUS; break;
-                case ".cs": cmbProgrammingLanguage.SelectedValue = ProgrammingLanguage.C_SHARP; break;
-                case ".java": cmbProgrammingLanguage.SelectedValue = ProgrammingLanguage.JAVA; break;
+                ProgrammingLanguage programmingLanguage = (ProgrammingLanguage)fieldInfo.GetValue(null);
+
+                if (programmingLanguage.Extension == extension)
+                {
+                    cmbProgrammingLanguage.SelectedValue = programmingLanguage.Name;
+                    break;
+                }
             }
         }
 
@@ -98,12 +118,7 @@ namespace CodeEditorApplication
         {
             if (fileName != null)
             {
-                using (FileStream fileStream = new FileStream(fileName, FileMode.Create))
-                {
-                    TextRange textRange = new TextRange(rtbEditor.Document.ContentStart, rtbEditor.Document.ContentEnd);
-
-                    textRange.Save(fileStream, DataFormats.Text);
-                }
+                WriteContentToFile();   
             }
             else
             {
@@ -117,14 +132,22 @@ namespace CodeEditorApplication
 
             if (saveDialog.ShowDialog() == true)
             {
-                using (FileStream fileStream = new FileStream(saveDialog.FileName, FileMode.Create))
-                {
-                    TextRange textRange = new TextRange(rtbEditor.Document.ContentStart, rtbEditor.Document.ContentEnd);
-
-                    textRange.Save(fileStream, DataFormats.Text);
-                }
-
                 fileName = saveDialog.FileName;
+
+                UpdateFileName();
+                WriteContentToFile();
+            }
+        }
+
+        private void WriteContentToFile()
+        {
+            using (StreamWriter streamWriter = new StreamWriter(fileName))
+            {
+                streamWriter.Write(avalonEdit.Text);
+
+                currentFileContent = avalonEdit.Text;
+                
+                UpdateContentChangedIndicator();
             }
         }
 
@@ -158,12 +181,13 @@ namespace CodeEditorApplication
             Dictionary<string, string> body = new Dictionary<string, string>();
 
             body.Add("ProgrammingLanguage", cmbProgrammingLanguage.SelectedItem.ToString());
-            body.Add("Code", new TextRange(rtbEditor.Document.ContentStart, rtbEditor.Document.ContentEnd).Text);
+            body.Add("Code", avalonEdit.Text);
 
             Dictionary<string, string> headers = new Dictionary<string, string>();
 
+            headers.Add(HttpRequestHeader.ContentType.ToString(), "application/json");
             headers.Add(HttpRequestHeader.Authorization.ToString(), "User " + username + ":" + password);
-
+            
             int selectedIndex = cmbTasks.SelectedIndex + 1;
 
             ucSpinner.Visibility = System.Windows.Visibility.Visible;
@@ -191,7 +215,7 @@ namespace CodeEditorApplication
 
                         resultWindow.PopulateWindow(runResult);
                         
-                        resultWindow.Show();
+                        resultWindow.ShowDialog();
                     }));
                 }
                 else
@@ -204,7 +228,6 @@ namespace CodeEditorApplication
                         }));
                     }
 
-                    
                     MessageBoxCentered(JsonConvert.DeserializeObject<Dictionary<string, string>>(responseText)["Message"], "Error");
                 }
 
@@ -268,12 +291,20 @@ namespace CodeEditorApplication
 
         #region----- Window Events -----
 
-        private void MainWindow_Loaded(object sender, EventArgs e)
+        private void Window_Loaded(object sender, EventArgs e)
         {
             Thread thread = new Thread(PopulateTasks);
             
             thread.IsBackground = true;
             thread.Start(); 
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.S && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                Save_Click(sender, e);
+            }
         }
 
         private void PopulateTasks()
@@ -304,20 +335,54 @@ namespace CodeEditorApplication
                 MessageBoxCentered("Failed to obtain tasks", responseMessage.StatusCode.ToString());
             }
         }
-
         #endregion
 
-        #region----- Key Events -----
-
-        private void MainWindow_TabKeyDown(object sender, KeyEventArgs e)
+        #region --- Component Events ---
+        
+        private void cmbProgrammingLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.Key == Key.Tab)
+            if (cmbProgrammingLanguage.SelectedIndex != -1)
             {
-                e.Handled = true;
-
-                rtbEditor.CaretPosition.InsertTextInRun("\t");   
+                avalonEdit.SyntaxHighlighting = 
+                    HighlightingManager.Instance.GetDefinition((string)cmbProgrammingLanguage.SelectedItem);
             }
         }
+
+        private void avalonEdit_TextChanged(object sender, EventArgs e)
+        {
+            UpdateContentChangedIndicator();  
+        }
+
+        private void UpdateContentChangedIndicator()
+        {           
+            if (!avalonEdit.Text.Equals(currentFileContent))
+            {
+                if (!this.Title.Contains("*"))
+                {
+                    this.Title += "*";
+                }
+            }
+            else
+            {
+                this.Title = this.Title.Replace("*", "");
+            }
+        }
+
+        private void UpdateFileName()
+        {
+            int idx = this.Title.IndexOf(" [");
+
+            if (idx != -1)
+            {
+                this.Title = this.Title.Remove(idx);
+            }
+
+            if(fileName != null)
+            {
+                this.Title += " [" + System.IO.Path.GetFileName(fileName) + "]";
+            }
+        }
+
         #endregion
 
         #region----- HTTP Requests -----
@@ -383,5 +448,7 @@ namespace CodeEditorApplication
             return new HttpResponseMessage(statusCode) { Content = new StringContent(responseText) };
         }
         #endregion
+
+        
     }
 }

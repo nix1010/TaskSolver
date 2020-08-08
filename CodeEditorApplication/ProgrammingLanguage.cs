@@ -6,10 +6,24 @@ using System.Threading.Tasks;
 
 namespace CodeEditorApplication
 {
-    enum ProgrammingLanguage
+    public class ProgrammingLanguage
     {
-        C_PLUS_PLUS,
-        C_SHARP,
-        JAVA
+        public static readonly ProgrammingLanguage C_PLUS_PLUS = new ProgrammingLanguage("C++", ".cpp");
+        public static readonly ProgrammingLanguage C_SHARP = new ProgrammingLanguage("C#", ".cs");
+        public static readonly ProgrammingLanguage JAVA = new ProgrammingLanguage("Java", ".java");
+
+        private ProgrammingLanguage(string name, string extension)
+        {
+            Name = name;
+            Extension = extension;
+        }
+
+        public string Name { get; private set; }
+        public string Extension { get; private set; }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }
