@@ -73,7 +73,7 @@
       <DependentUpon>ResultWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="RunResult.cs" />
-    <Compile Include="Task.cs" />
+    <Compile Include="ProgrammingTask.cs" />
     <Compile Include="UserControlSpinner.xaml.cs">
       <DependentUpon>UserControlSpinner.xaml</DependentUpon>
     </Compile>

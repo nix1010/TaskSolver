@@ -1,26 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Net;
-using System.Net.Http;
-using System.IO;
+﻿using ICSharpCode.AvalonEdit.Highlighting;
 using Microsoft.Win32;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Highlighting;
-using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace CodeEditorApplication
 {
@@ -34,12 +26,12 @@ namespace CodeEditorApplication
         private string username;
         private string password;
         private const string host = "http://localhost:50791/";
-        private List<CodeEditorApplication.Task> tasks;
+        private List<ProgrammingTask> tasks;
 
         public MainWindow()
         {
             InitializeComponent();
-
+            
             cmbProgrammingLanguage.ItemsSource =
                 typeof(ProgrammingLanguage).GetFields().Select(element => element.GetValue(null).ToString());
 
@@ -326,7 +318,7 @@ namespace CodeEditorApplication
             {
                 string responseText = responseMessage.Content.ReadAsStringAsync().Result;
 
-                tasks = JsonConvert.DeserializeObject<List<CodeEditorApplication.Task>>(responseText);
+                tasks = JsonConvert.DeserializeObject<List<ProgrammingTask>>(responseText);
 
                 for (int i = 0; i < tasks.Count; ++i)
                 {
