@@ -59,12 +59,12 @@
                                TextChanged="avalonEdit_TextChanged">
             <avalonEdit:TextEditor.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Command="Undo" />
-                    <MenuItem Command="Redo" />
-                    <Separator/>
                     <MenuItem Command="Cut" />
                     <MenuItem Command="Copy" />
                     <MenuItem Command="Paste" />
+                    <Separator/>
+                    <MenuItem Command="Undo" />
+                    <MenuItem Command="Redo" />
                 </ContextMenu>
             </avalonEdit:TextEditor.ContextMenu>
         </avalonEdit:TextEditor>

@@ -68,7 +68,7 @@ namespace CodeEditorApplication
             avalonEdit.Clear();
             currentFileContent = avalonEdit.Text;
 
-            UpdateFileName();
+            UpdateFileNameTitle();
         }
 
         private void Open_Click(object sender, RoutedEventArgs e)
@@ -94,7 +94,7 @@ namespace CodeEditorApplication
                     avalonEdit.Text = currentFileContent = content;
                     fileName = openDialog.FileName;
                     
-                    UpdateFileName();
+                    UpdateFileNameTitle();
                     SetLanguage(System.IO.Path.GetExtension(fileName));
                 }
             }
@@ -134,7 +134,7 @@ namespace CodeEditorApplication
             {
                 fileName = saveDialog.FileName;
 
-                UpdateFileName();
+                UpdateFileNameTitle();
                 WriteContentToFile();
             }
         }
@@ -305,6 +305,17 @@ namespace CodeEditorApplication
             {
                 Save_Click(sender, e);
             }
+            else if ((e.Key == Key.Add || e.Key == Key.OemPlus) && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                avalonEdit.FontSize += 1;
+            }
+            else if ((e.Key == Key.Subtract || e.Key == Key.OemMinus) && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                if (avalonEdit.FontSize > 1)
+                {
+                    avalonEdit.FontSize -= 1;
+                }
+            }
         }
 
         private void PopulateTasks()
@@ -368,7 +379,7 @@ namespace CodeEditorApplication
             }
         }
 
-        private void UpdateFileName()
+        private void UpdateFileNameTitle()
         {
             int idx = this.Title.IndexOf(" [");
 
@@ -447,8 +458,6 @@ namespace CodeEditorApplication
 
             return new HttpResponseMessage(statusCode) { Content = new StringContent(responseText) };
         }
-        #endregion
-
-        
+        #endregion     
     }
 }
