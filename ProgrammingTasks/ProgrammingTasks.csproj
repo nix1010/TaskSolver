@@ -148,7 +148,6 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
-    <Compile Include="App_Start\IdentityConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Areas\HelpPage\ApiDescriptionExtensions.cs" />
@@ -167,7 +166,6 @@
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="CodeExecutor.cs" />
     <Compile Include="ExceptionHandler.cs" />
-    <Compile Include="Identity\AuthRepository.cs" />
     <Compile Include="Models\Entity\EntityModel.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -196,7 +194,6 @@
       <DependentUpon>EntityModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\ErrorInfo.cs" />
-    <Compile Include="Identity\Providers\SimpleAuthorizationServerProvider.cs" />
     <Compile Include="UserAuthentication.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\TasksController.cs" />
