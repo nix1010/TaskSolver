@@ -42,7 +42,6 @@ namespace ProgrammingTasks.Controllers
 
         // GET api/tasks/{id}
         [HttpGet]
-        [Authorize]
         public TaskDTO GetTask(int id)
         {
             using (programming_tasksEntities entitities = new programming_tasksEntities())
