@@ -279,6 +279,18 @@ namespace CodeEditorApplication
                 MessageBoxCentered(tasks[cmbTasks.SelectedIndex].Description, tasks[cmbTasks.SelectedIndex].Title);
             }
         }
+
+        private void RefreshTasks_Click(object sender, RoutedEventArgs e)
+        {
+            Thread thread = new Thread(() =>
+            {
+                PopulateTasks();
+            });
+
+            thread.IsBackground = true;
+            thread.Start();
+        }
+
         #endregion
 
         #region----- Window Events -----
@@ -320,12 +332,20 @@ namespace CodeEditorApplication
 
                 tasks = JsonConvert.DeserializeObject<List<ProgrammingTask>>(responseText);
 
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    cmbTasks.Items.Clear();
+                }));
+
                 for (int i = 0; i < tasks.Count; ++i)
                 {
                     try
                     {
                         // force WPF to render UI elemnts
-                        Dispatcher.Invoke(new Action(() => { cmbTasks.Items.Add(tasks[i].Title); }));
+                        Dispatcher.Invoke(new Action(() =>
+                        {            
+                            cmbTasks.Items.Add(tasks[i].Title);
+                        }));
                     }
                     catch (TaskCanceledException)
                     {

@@ -31,6 +31,9 @@
                 <Separator/>
                 <MenuItem Header="E_xit" Name="exit" Click="Exit_Click" />
             </MenuItem>
+            <MenuItem Header="_Edit" >
+                <MenuItem Header="_Refresh Tasks" Name="RefreshTasks" Click="RefreshTasks_Click"></MenuItem>
+            </MenuItem>
         </Menu>
         
         <WrapPanel Grid.Row="1" Margin="3">
