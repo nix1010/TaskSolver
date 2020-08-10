@@ -5,6 +5,9 @@ It consists of two parts:
 - WPF - client side text/code editor application
 - ASP.NET - server side API code compiler and executor
 
+### Supported languages
+C++, Java, C#
+
 ## Requirements
 - Microsoft Windows
 - .NET runtime 4.5 or later
