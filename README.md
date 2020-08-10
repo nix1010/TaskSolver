@@ -1,5 +1,5 @@
 ## About
-This application is written entirely in C#.
+This application is written in C#.
 
 It consists of two parts:
 - WPF - client side text/code editor application
