@@ -29,10 +29,11 @@
                 <MenuItem Header="_Save" Name="Save" Click="Save_Click" />
                 <MenuItem Header="_Save As" Name="SaveAs" Click="SaveAs_Click" />
                 <Separator/>
-                <MenuItem Header="E_xit" Name="exit" Click="Exit_Click" />
+                <MenuItem Header="E_xit" Name="Exit" Click="Exit_Click" />
             </MenuItem>
             <MenuItem Header="_Edit" >
                 <MenuItem Header="_Refresh Tasks" Name="RefreshTasks" Click="RefreshTasks_Click"></MenuItem>
+                <MenuItem Header="_Code Completion" Name="CodeCompletion" IsCheckable="True" IsChecked="True" Click="CodeCompletion_Click"></MenuItem>
             </MenuItem>
         </Menu>
         

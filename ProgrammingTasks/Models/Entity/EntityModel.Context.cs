@@ -12,10 +12,8 @@ namespace ProgrammingTasks.Models.Entity
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
-    /*using ProgrammingTasks.Identity;
-    using Microsoft.AspNet.Identity.EntityFramework;
-    */
-    public partial class programming_tasksEntities : /*IdentityDbContext<IdentityUser>*/DbContext
+    
+    public partial class programming_tasksEntities : DbContext
     {
         public programming_tasksEntities()
             : base("name=programming_tasksEntities")

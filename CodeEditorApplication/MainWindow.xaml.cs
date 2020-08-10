@@ -1,13 +1,16 @@
-﻿using ICSharpCode.AvalonEdit.Highlighting;
+﻿using ICSharpCode.AvalonEdit.CodeCompletion;
+using ICSharpCode.AvalonEdit.Highlighting;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -27,15 +30,19 @@ namespace CodeEditorApplication
         private string password;
         private const string host = "http://localhost:50791/";
         private List<ProgrammingTask> tasks;
+        private CompletionWindow completionWindow;
 
         public MainWindow()
         {
             InitializeComponent();
-            
+
+            ConfigureCodeCompletion();
+
             cmbProgrammingLanguage.ItemsSource =
                 typeof(ProgrammingLanguage).GetFields().Select(element => element.GetValue(null).ToString());
 
             username = password = null;
+            completionWindow = null;
 
             NewDocument();
         }
@@ -291,6 +298,11 @@ namespace CodeEditorApplication
             thread.Start();
         }
 
+        private void CodeCompletion_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigureCodeCompletion();
+        }
+
         #endregion
 
         #region----- Window Events -----
@@ -373,7 +385,100 @@ namespace CodeEditorApplication
 
         private void avalonEdit_TextChanged(object sender, EventArgs e)
         {
-            UpdateContentChangedIndicator();  
+            UpdateContentChangedIndicator();
+        }
+
+        private void ConfigureCodeCompletion()
+        {
+            if (CodeCompletion.IsChecked)
+            {
+                avalonEdit.TextArea.TextEntered += avalonEdit_TextEntered;
+                avalonEdit.TextArea.TextEntering += avalonEdit_TextEntering;
+            }
+            else
+            {
+                avalonEdit.TextArea.TextEntered -= avalonEdit_TextEntered;
+                avalonEdit.TextArea.TextEntering -= avalonEdit_TextEntering;
+            }
+        }
+
+        private void avalonEdit_TextEntered(object sender, TextCompositionEventArgs e)
+        {
+            if (char.IsLetter(e.Text[0]) || e.Text[0] == '_')
+            {
+                int pos = avalonEdit.TextArea.Caret.Offset;
+                string leftFromInput = avalonEdit.Text.Substring(0, pos);
+                string rightFromInput = avalonEdit.Text.Substring(pos, avalonEdit.Text.Length - pos);
+
+                //match first character in left half which is not word character
+                Match matchLeft = Regex.Match(leftFromInput, "[^a-zA-Z&_]", RegexOptions.RightToLeft);
+                //match first character in right half which is not word character
+                Match matchRight = Regex.Match(rightFromInput, "[^a-zA-Z&_&0-9]");
+
+                int posLeft = matchLeft.Index;
+                int posRight = matchRight.Index;
+
+                //if match then move to first character of word
+                if (matchLeft.Success)
+                {
+                    posLeft += 1;
+                }
+
+                //if no match subtract current pos, later it increments
+                if (!matchRight.Success)
+                {
+                    posRight = avalonEdit.Text.Length - pos;
+                }
+
+                string currentWord = avalonEdit.Text.Substring(posLeft, ((posRight + pos) - posLeft));
+                
+                //remove 'currentWord' from left and right halfs
+                leftFromInput = leftFromInput.Substring(0, posLeft);
+                rightFromInput = rightFromInput.Substring(posRight, rightFromInput.Length - posRight);
+
+                //match all words that start with 'currentWord' (case insensitive)
+                MatchCollection matchCollection = 
+                    Regex.Matches(leftFromInput + rightFromInput, "(?i)\\b(" + currentWord + "\\w*)\\b");
+
+                if (matchCollection.Count > 0)
+                {
+                    completionWindow = new CompletionWindow(avalonEdit.TextArea);
+
+                    IList<ICompletionData> data = completionWindow.CompletionList.CompletionData;
+                    HashSet<ICompletionData> uniqueData = new HashSet<ICompletionData>();
+
+                    //insert matched words into window
+                    foreach (Match match in matchCollection)
+                    {
+                        CompletionData completionData = new CompletionData(match.Value, posLeft, currentWord.Length);
+
+                        //if not already inserted
+                        if (uniqueData.Add(completionData))
+                        {
+                            data.Add(completionData);
+                        }
+                    }
+
+                    completionWindow.Show();
+                    completionWindow.Closed += delegate
+                    {
+                        completionWindow = null;
+                    };
+                }
+            }
+        }
+
+        private void avalonEdit_TextEntering(object sender, TextCompositionEventArgs e)
+        {
+            if (e.Text.Length > 0 && completionWindow != null)
+            {
+                if (!char.IsLetterOrDigit(e.Text[0]))
+                {
+                    // Whenever a non-letter is typed while the completion window is open,
+                    // insert the currently selected element.
+                    completionWindow.CompletionList.RequestInsertion(e);
+                }
+            }
         }
 
         private void UpdateContentChangedIndicator()
@@ -470,6 +575,6 @@ namespace CodeEditorApplication
 
             return new HttpResponseMessage(statusCode) { Content = new StringContent(responseText) };
         }
-        #endregion     
+        #endregion
     }
 }

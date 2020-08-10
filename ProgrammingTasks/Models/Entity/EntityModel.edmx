@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="programming_tasksModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="programming_tasksModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityContainer Name="programming_tasksModelStoreContainer">
           <EntitySet Name="examples" EntityType="programming_tasksModel.Store.examples" store:Type="Tables" Schema="dbo" />
           <EntitySet Name="tasks" EntityType="programming_tasksModel.Store.tasks" store:Type="Tables" Schema="dbo" />
@@ -14,11 +14,11 @@
             <End Role="tasks" EntitySet="tasks" />
             <End Role="examples" EntitySet="examples" />
           </AssociationSet>
-          <AssociationSet Name="FK__users_sol__task___32E0915F" Association="programming_tasksModel.Store.FK__users_sol__task___32E0915F">
+          <AssociationSet Name="FK__users_sol__task___70DDC3D8" Association="programming_tasksModel.Store.FK__users_sol__task___70DDC3D8">
             <End Role="tasks" EntitySet="tasks" />
             <End Role="users_solutions" EntitySet="users_solutions" />
           </AssociationSet>
-          <AssociationSet Name="FK__users_sol__user___31EC6D26" Association="programming_tasksModel.Store.FK__users_sol__user___31EC6D26">
+          <AssociationSet Name="FK__users_sol__user___6FE99F9F" Association="programming_tasksModel.Store.FK__users_sol__user___6FE99F9F">
             <End Role="users" EntitySet="users" />
             <End Role="users_solutions" EntitySet="users_solutions" />
           </AssociationSet>
@@ -58,6 +58,7 @@
           <Property Name="code" Type="varchar(max)" />
           <Property Name="status" Type="bit" />
           <Property Name="description" Type="varchar" MaxLength="255" />
+          <Property Name="date" Type="datetime" />
         </EntityType>
         <Association Name="FK__examples__task_i__145C0A3F">
           <End Role="tasks" Type="programming_tasksModel.Store.tasks" Multiplicity="0..1">
@@ -73,7 +74,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__users_sol__task___32E0915F">
+        <Association Name="FK__users_sol__task___70DDC3D8">
           <End Role="tasks" Type="programming_tasksModel.Store.tasks" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
           </End>
@@ -87,7 +88,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__users_sol__user___31EC6D26">
+        <Association Name="FK__users_sol__user___6FE99F9F">
           <End Role="users" Type="programming_tasksModel.Store.users" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
           </End>
@@ -101,8 +102,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="programming_tasksModel" Alias="Self" p1:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:p1="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -165,6 +165,7 @@
           <Property Name="description" Type="String" MaxLength="255" Unicode="false" FixedLength="false" />
           <NavigationProperty Name="task" Relationship="programming_tasksModel.FK__users_sol__task___32E0915F" FromRole="users_solutions" ToRole="tasks" />
           <NavigationProperty Name="user" Relationship="programming_tasksModel.FK__users_sol__user___31EC6D26" FromRole="users_solutions" ToRole="users" />
+          <Property Type="DateTime" Name="date" Precision="3" />
         </EntityType>
         <Association Name="FK__examples__task_i__145C0A3F">
           <End Role="tasks" Type="programming_tasksModel.task" Multiplicity="0..1">
@@ -245,6 +246,7 @@
           <EntitySetMapping Name="users_solutions">
             <EntityTypeMapping TypeName="programming_tasksModel.users_solutions">
               <MappingFragment StoreEntitySet="users_solutions">
+                <ScalarProperty Name="date" ColumnName="date" />
                 <ScalarProperty Name="id" ColumnName="id" />
                 <ScalarProperty Name="user_id" ColumnName="user_id" />
                 <ScalarProperty Name="task_id" ColumnName="task_id" />
@@ -268,7 +270,7 @@
     <Options>
       <DesignerInfoPropertySet>
         <DesignerProperty Name="ValidateOnBuild" Value="true" />
-        <DesignerProperty Name="EnablePluralization" Value="False" />
+        <DesignerProperty Name="EnablePluralization" Value="True" />
         <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
         <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
       </DesignerInfoPropertySet>

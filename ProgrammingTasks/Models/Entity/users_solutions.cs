@@ -20,6 +20,7 @@ namespace ProgrammingTasks.Models.Entity
         public string code { get; set; }
         public Nullable<bool> status { get; set; }
         public string description { get; set; }
+        public Nullable<System.DateTime> date { get; set; }
     
         public virtual task task { get; set; }
         public virtual user user { get; set; }

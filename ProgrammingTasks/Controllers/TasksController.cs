@@ -91,7 +91,8 @@ namespace ProgrammingTasks.Controllers
                     status = runResult.CorrectExamples == taskResult.examples.Count,
                     description = runResult.CorrectExamples == taskResult.examples.Count ?
                                     "Code executed successfully for all examples" :
-                                    "Code failed at some example(s)"
+                                    "Code failed at some example(s)",
+                    date = DateTime.Now
                 });
 
                 entities.SaveChanges();
