@@ -44,8 +44,9 @@ CREATE TABLE users_solutions(
 );
 
 -- tasks DATA
-INSERT INTO tasks (title, description) VALUES('Najveci element', 'Napisati funkciju koja ce prihvatiti dva paremtra i vratiti veci element');
-INSERT INTO tasks (title, description) VALUES('Najmanji element', 'Napisati funkciju koja ce prihvatiti dva paremtra i vratiti manji element');
+INSERT INTO tasks (title, description) VALUES('Najveci element', 'Napisati program koji ce prihvatiti dve promenljive i vratiti najvecu');
+INSERT INTO tasks (title, description) VALUES('Najmanji element', 'Napisati program koji ce prihvatiti dve promenljive i vratiti najmanju');
+INSERT INTO tasks (title, description) VALUES('Srednja vrednost', 'Napisati program koji ce prihvatiti niz duzine n i vratiti srednju vrednost niza');
 
 -- examples DATA
 INSERT INTO examples (task_id, input, output) VALUES(1, '1;2', '2');
@@ -54,6 +55,11 @@ INSERT INTO examples (task_id, input, output) VALUES(1, '45;7', '45');
 INSERT INTO examples (task_id, input, output) VALUES(2, '7;14', '7');
 INSERT INTO examples (task_id, input, output) VALUES(2, '-9;12', '-9');
 INSERT INTO examples (task_id, input, output) VALUES(2, '63;15', '15');
+
+INSERT INTO examples (task_id, input, output) VALUES(3, '7;4;7;6;3;2;1;4', '4');
+INSERT INTO examples (task_id, input, output) VALUES(3, '3;12;2;8', '8');
+INSERT INTO examples (task_id, input, output) VALUES(3, '5;65;78;96;12;14', '53');
+INSERT INTO examples (task_id, input, output) VALUES(3, '8;77;14;88;95;21;41;0;12', '44');
 
 -- users DATA
 INSERT INTO users (username, password) VALUES('user1', HASHBYTES('SHA2_256', 'user1'));
@@ -64,3 +70,4 @@ SELECT * FROM users;
 SELECT * FROM users_solutions;
 SELECT COUNT(id) FROM users_solutions;
 exec sp_columns users;
+
