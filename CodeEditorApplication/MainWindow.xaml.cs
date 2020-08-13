@@ -230,7 +230,8 @@ namespace CodeEditorApplication
                         }));
                     }
 
-                    MessageBoxCentered(JsonConvert.DeserializeObject<Dictionary<string, string>>(responseText)["Message"], "Error");
+                    MessageBoxCentered(JsonConvert.DeserializeObject<Dictionary<string, string>>(responseText)["Message"],
+                        responseMessage.StatusCode.ToString());
                 }
             });
 
@@ -544,7 +545,7 @@ namespace CodeEditorApplication
             }
             catch (Exception)
             {
-                statusCode = HttpStatusCode.RequestTimeout;
+                statusCode = HttpStatusCode.ServiceUnavailable;
                 responseText = JsonConvert.SerializeObject(new Dictionary<string, string>()
                 {
                     {"StatusCode", statusCode.ToString()},
@@ -578,7 +579,7 @@ namespace CodeEditorApplication
             }
             catch(Exception)
             {
-                statusCode = HttpStatusCode.RequestTimeout;
+                statusCode = HttpStatusCode.ServiceUnavailable;
                 responseText = JsonConvert.SerializeObject(new Dictionary<string, string>()
                 {
                     {"StatusCode", statusCode.ToString()},
