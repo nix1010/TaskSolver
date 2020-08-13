@@ -524,7 +524,7 @@ namespace CodeEditorApplication
         {
             HttpClient client = new HttpClient();
             HttpStatusCode statusCode;
-            string responseText;
+            string responseText = "";
 
             if (headers != null)
             {
@@ -545,7 +545,11 @@ namespace CodeEditorApplication
             catch (Exception)
             {
                 statusCode = HttpStatusCode.RequestTimeout;
-                responseText = "Error sendig request";
+                responseText = JsonConvert.SerializeObject(new Dictionary<string, string>()
+                {
+                    {"StatusCode", statusCode.ToString()},
+                    {"Message", "Error sending request"}
+                });
             }
 
             return new HttpResponseMessage(statusCode) { Content = new StringContent(responseText) };
@@ -575,7 +579,11 @@ namespace CodeEditorApplication
             catch(Exception)
             {
                 statusCode = HttpStatusCode.RequestTimeout;
-                responseText = "Error sending request";
+                responseText = JsonConvert.SerializeObject(new Dictionary<string, string>()
+                {
+                    {"StatusCode", statusCode.ToString()},
+                    {"Message", "Error sending request"}
+                });
             }
 
             return new HttpResponseMessage(statusCode) { Content = new StringContent(responseText) };
