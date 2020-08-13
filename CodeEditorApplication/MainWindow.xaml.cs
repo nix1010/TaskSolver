@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Diagnostics;
 
 namespace CodeEditorApplication
 {
@@ -190,16 +191,18 @@ namespace CodeEditorApplication
             int selectedIndex = cmbTasks.SelectedIndex + 1;
 
             ucSpinner.Visibility = System.Windows.Visibility.Visible;
+            btnSendSolution.IsEnabled = false;
 
             //don't block current thread
             Thread thread = new Thread(() =>
             {
                 HttpResponseMessage responseMessage = PostRequest(host + "/api/tasks/" + selectedIndex, body, headers);
-
-                Dispatcher.Invoke(new Action(() => { ucSpinner.Visibility = System.Windows.Visibility.Hidden; }));
                 
                 string responseText = responseMessage.Content.ReadAsStringAsync().Result;
-                
+
+                Dispatcher.Invoke(new Action(() => { ucSpinner.Visibility = System.Windows.Visibility.Hidden; }));
+                Dispatcher.Invoke(new Action(() => { btnSendSolution.IsEnabled = true; }));
+
                 if (responseMessage.StatusCode == HttpStatusCode.OK)
                 {
                     RunResult runResult = JsonConvert.DeserializeObject<RunResult>(responseText);
@@ -229,7 +232,6 @@ namespace CodeEditorApplication
 
                     MessageBoxCentered(JsonConvert.DeserializeObject<Dictionary<string, string>>(responseText)["Message"], "Error");
                 }
-
             });
 
             thread.IsBackground = true;
@@ -289,13 +291,7 @@ namespace CodeEditorApplication
 
         private void RefreshTasks_Click(object sender, RoutedEventArgs e)
         {
-            Thread thread = new Thread(() =>
-            {
-                PopulateTasks();
-            });
-
-            thread.IsBackground = true;
-            thread.Start();
+            PopulateTasksAsynchronically();
         }
 
         private void CodeCompletion_Click(object sender, RoutedEventArgs e)
@@ -309,12 +305,17 @@ namespace CodeEditorApplication
 
         private void Window_Loaded(object sender, EventArgs e)
         {
-            Thread thread = new Thread(PopulateTasks);
-            
-            thread.IsBackground = true;
-            thread.Start(); 
+            PopulateTasksAsynchronically();
         }
 
+		private void PopulateTasksAsynchronically()
+		{
+			Thread thread = new Thread(PopulateTasks);
+
+            thread.IsBackground = true;
+            thread.Start();
+		}
+		
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.S && Keyboard.Modifiers == ModifierKeys.Control)
@@ -424,7 +425,7 @@ namespace CodeEditorApplication
                     posLeft += 1;
                 }
 
-                //if no match subtract current pos, later it increments
+                //if no match subtract current pos from end of file, later it increments
                 if (!matchRight.Success)
                 {
                     posRight = avalonEdit.Text.Length - pos;
@@ -464,6 +465,10 @@ namespace CodeEditorApplication
                     {
                         completionWindow = null;
                     };
+                }
+                else if(completionWindow != null) //if nothing matches close window if opened
+                {
+                    completionWindow.Close();
                 }
             }
         }

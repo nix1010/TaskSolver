@@ -9,7 +9,6 @@
         Background="#f7f7f7"
         Loaded="Window_Loaded"
         KeyDown="Window_KeyDown">
-
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -24,15 +23,15 @@
         
         <Menu Grid.Row="0" Name="Menu">
             <MenuItem Header="_File" >
-                <MenuItem Header="_New" Name="New" Click="New_Click" />
-                <MenuItem Header="_Open" Name="Open" Click="Open_Click" />
-                <MenuItem Header="_Save" Name="Save" Click="Save_Click" />
-                <MenuItem Header="_Save As" Name="SaveAs" Click="SaveAs_Click" />
+                <MenuItem Header="_New" Click="New_Click" />
+                <MenuItem Header="_Open" Click="Open_Click" />
+                <MenuItem Header="_Save" Click="Save_Click" />
+                <MenuItem Header="_Save As" Click="SaveAs_Click" />
                 <Separator/>
-                <MenuItem Header="E_xit" Name="Exit" Click="Exit_Click" />
+                <MenuItem Header="E_xit" Click="Exit_Click" />
             </MenuItem>
             <MenuItem Header="_Edit" >
-                <MenuItem Header="_Refresh Tasks" Name="RefreshTasks" Click="RefreshTasks_Click"></MenuItem>
+                <MenuItem Header="_Refresh Tasks" Click="RefreshTasks_Click"></MenuItem>
                 <MenuItem Header="_Code Completion" Name="CodeCompletion" IsCheckable="True" IsChecked="True" Click="CodeCompletion_Click"></MenuItem>
             </MenuItem>
         </Menu>
@@ -50,7 +49,7 @@
         </WrapPanel>
         <StackPanel Grid.Row="3">
             <WrapPanel Margin="5">
-                <Button Click="Send_Click">Send Solution</Button>
+                <Button Name="btnSendSolution" Click="Send_Click">Send Solution</Button>
                 <spinner:UserControlSpinner x:Name="ucSpinner" Margin="10 0" Visibility="Hidden"/>
             </WrapPanel>
             <Separator />
