@@ -5,6 +5,8 @@ using Newtonsoft.Json;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -16,7 +18,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Diagnostics;
 
 namespace CodeEditorApplication
 {
@@ -48,11 +49,12 @@ namespace CodeEditorApplication
             NewDocument();
         }
 
-        private MessageBoxResult MessageBoxCentered(string messageBoxText, string caption)
+        private MessageBoxResult MessageBoxCentered(string messageBoxText, string caption,
+            MessageBoxButton messageBoxButton = MessageBoxButton.OK)
         {
             MessageBoxCenterer.PrepToCenterMessageBoxOnWindow(this);
             
-            return MessageBox.Show(messageBoxText, caption);
+            return MessageBox.Show(messageBoxText, caption, messageBoxButton);
         }
 
         #region----- Button Events -----
@@ -116,17 +118,29 @@ namespace CodeEditorApplication
 
         private void Save_Click(object sender, RoutedEventArgs e)
         {
+            Save();    
+        }
+
+        private bool Save()
+        {
             if (fileName != null)
             {
-                WriteContentToFile();   
+                WriteContentToFile();
+
+                return true;
             }
             else
             {
-                SaveAs_Click(sender, e);
+                return SaveAs();
             }
         }
 
         private void SaveAs_Click(object sender, RoutedEventArgs e)
+        {
+            SaveAs();
+        }
+
+        private bool SaveAs()
         {
             SaveFileDialog saveDialog = new SaveFileDialog();
 
@@ -136,7 +150,11 @@ namespace CodeEditorApplication
 
                 UpdateFileNameTitle();
                 WriteContentToFile();
+
+                return true;
             }
+
+            return false;
         }
 
         private void WriteContentToFile()
@@ -217,7 +235,7 @@ namespace CodeEditorApplication
 
                         resultWindow.PopulateWindow(runResult);
                         
-                        resultWindow.ShowDialog();
+                        resultWindow.Show();
                     }));
                 }
                 else
@@ -372,6 +390,23 @@ namespace CodeEditorApplication
                 MessageBoxCentered("Failed to obtain tasks", responseMessage.StatusCode.ToString());
             }
         }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            if (this.Title.Contains("*"))
+            {
+                MessageBoxResult messageBoxResult =
+                    MessageBoxCentered("Do you want to save changes?", "Alert", MessageBoxButton.YesNoCancel);
+
+                if ((messageBoxResult == MessageBoxResult.Yes && !Save())
+                    ||
+                    messageBoxResult == MessageBoxResult.Cancel)
+                {
+                    e.Cancel = true;
+                }
+            }
+        }
+
         #endregion
 
         #region --- Component Events ---
