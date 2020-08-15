@@ -289,7 +289,6 @@ namespace CodeEditorApplication
                 MenuItem menuItem = new MenuItem()
                 {
                     Header = "_Logout",
-                    Name = "Logout"
                 };
 
                 menuItem.Click += Logout_Click;
