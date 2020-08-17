@@ -214,7 +214,8 @@ namespace CodeEditorApplication
             //don't block current thread
             Thread thread = new Thread(() =>
             {
-                HttpResponseMessage responseMessage = PostRequest(host + "/api/tasks/" + selectedIndex, body, headers);
+                HttpResponseMessage responseMessage = HttpRequest(host + "/api/tasks/" + selectedIndex, HttpMethod.Post, body,
+                    headers);
                 
                 string responseText = responseMessage.Content.ReadAsStringAsync().Result;
 
@@ -355,7 +356,7 @@ namespace CodeEditorApplication
 
         private void PopulateTasks()
         {
-            HttpResponseMessage responseMessage = GetRequest(host + "api/tasks");
+            HttpResponseMessage responseMessage = HttpRequest(host + "api/tasks", HttpMethod.Get);
 
             if (responseMessage.StatusCode == HttpStatusCode.OK)
             {
@@ -555,9 +556,11 @@ namespace CodeEditorApplication
 
         #region----- HTTP Requests -----
 
-        private HttpResponseMessage PostRequest(string url, Dictionary<string, string> body, Dictionary<string, string> headers = null)
+        private HttpResponseMessage HttpRequest(string url, HttpMethod method, Dictionary<string, string> body = null,
+            Dictionary<string, string> headers = null)
         {
             HttpClient client = new HttpClient();
+            FormUrlEncodedContent content = null;
             HttpStatusCode statusCode;
             string responseText = "";
 
@@ -568,9 +571,16 @@ namespace CodeEditorApplication
                     client.DefaultRequestHeaders.TryAddWithoutValidation(header.Key, header.Value);
                 }
             }
-            
-            FormUrlEncodedContent content = new FormUrlEncodedContent(body);
-            Task<HttpResponseMessage> response = client.PostAsync(url, content);
+
+            if (body != null)
+            {
+                content = new FormUrlEncodedContent(body);    
+            }
+
+            Task<HttpResponseMessage> response = client.SendAsync(new HttpRequestMessage(method, url)
+            {
+                Content = content,
+            });
 
             try
             {
@@ -589,40 +599,7 @@ namespace CodeEditorApplication
 
             return new HttpResponseMessage(statusCode) { Content = new StringContent(responseText) };
         }
-
-        private HttpResponseMessage GetRequest(string url, Dictionary<string, string> headers = null)
-        {
-            HttpClient client = new HttpClient();
-            HttpStatusCode statusCode;
-            string responseText;
-
-            if (headers != null)
-            {
-                foreach (KeyValuePair<string, string> header in headers)
-                {
-                    client.DefaultRequestHeaders.Add(header.Key, header.Value);
-                }
-            }
-            
-            Task<HttpResponseMessage> response = client.GetAsync(url);
-            
-            try
-            {
-                 statusCode = response.Result.StatusCode;
-                 responseText = response.Result.Content.ReadAsStringAsync().Result;
-            }
-            catch(Exception)
-            {
-                statusCode = HttpStatusCode.ServiceUnavailable;
-                responseText = JsonConvert.SerializeObject(new Dictionary<string, string>()
-                {
-                    {"StatusCode", statusCode.ToString()},
-                    {"Message", "Error sending request"}
-                });
-            }
-
-            return new HttpResponseMessage(statusCode) { Content = new StringContent(responseText) };
-        }
+        
         #endregion
     }
 }
