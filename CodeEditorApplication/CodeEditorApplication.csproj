@@ -65,20 +65,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="CompletionData.cs" />
-    <Compile Include="ExampleResult.cs" />
+    <Compile Include="Models\ExampleResult.cs" />
     <Compile Include="LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MessageBoxCenterer.cs" />
     <Compile Include="ResultWindow.xaml.cs">
       <DependentUpon>ResultWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="RunResult.cs" />
-    <Compile Include="ProgrammingTask.cs" />
+    <Compile Include="Models\RunResult.cs" />
+    <Compile Include="Models\ProgrammingTask.cs" />
     <Compile Include="UserControlSpinner.xaml.cs">
       <DependentUpon>UserControlSpinner.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utility\CompletionData.cs" />
+    <Compile Include="Utility\MessageBoxCenterer.cs" />
     <Page Include="LoginWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -105,7 +105,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ProgrammingLanguage.cs" />
+    <Compile Include="Models\ProgrammingLanguage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

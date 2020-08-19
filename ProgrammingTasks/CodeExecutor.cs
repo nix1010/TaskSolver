@@ -27,14 +27,17 @@ namespace ProgrammingTasks
             }
         }
 
-        public RunResultDTO RunExamples(TaskSolutionDTO taskSolution, ICollection<example> examples)
+        public RunResultDTO RunTask(TaskSolutionDTO taskSolution, task task)
         {
             if (taskSolution == null)
             {
                 ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "No body provided");
             }
 
-            RunResultDTO runResult = new RunResultDTO();
+            RunResultDTO runResult = new RunResultDTO()
+            {
+                TaskTitle = task.title
+            };
 
             ProcessResult processResult = Compile(taskSolution);
 
@@ -44,7 +47,7 @@ namespace ProgrammingTasks
                     processResult.Error.Replace(codeLocation, ""));
             }
 
-            foreach (example example in examples)
+            foreach (example example in task.examples)
             {
                 string description;
                 

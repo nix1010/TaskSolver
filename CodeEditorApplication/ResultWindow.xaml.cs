@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CodeEditorApplication.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -27,15 +28,17 @@ namespace CodeEditorApplication
 
         public void PopulateWindow(RunResult runResult)
         {
-            lblExamplesPassed.Content = runResult.CorrectExamples + " / " + runResult.exampleResults.Count;
+            this.Title += " [" + runResult.TaskTitle + "]";
+
+            lblExamplesPassed.Text = runResult.CorrectExamples + " / " + runResult.exampleResults.Count;
 
             foreach (ExampleResult exampleResult in runResult.exampleResults)
             {
                 foreach (PropertyInfo propertyInfo in typeof(ExampleResult).GetProperties())
                 {
-                    Label label = new Label()
+                    TextBox label = new TextBox()
                     {
-                        Content = propertyInfo.Name + ": " + propertyInfo.GetValue(exampleResult, null),
+                        Text = propertyInfo.Name + ": " + propertyInfo.GetValue(exampleResult, null),
                         FontSize = 14
                     };
 

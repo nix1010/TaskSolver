@@ -1,4 +1,6 @@
-﻿using ICSharpCode.AvalonEdit.CodeCompletion;
+﻿using CodeEditorApplication.Models;
+using CodeEditorApplication.Utility;
+using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Highlighting;
 using Microsoft.Win32;
 using Newtonsoft.Json;

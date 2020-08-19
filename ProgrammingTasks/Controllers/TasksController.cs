@@ -81,7 +81,7 @@ namespace ProgrammingTasks.Controllers
 
                 CodeExecutor codeExecutor = new CodeExecutor();
 
-                RunResultDTO runResult = codeExecutor.RunExamples(taskSolution, taskResult.examples);
+                RunResultDTO runResult = codeExecutor.RunTask(taskSolution, taskResult);
 
                 entities.users_solutions.Add(new users_solutions()
                 {

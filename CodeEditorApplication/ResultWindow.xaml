@@ -3,13 +3,22 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Result" Height="300" Width="300">
     
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
         <StackPanel Name="StackPanel">
-            <WrapPanel>
-                <Label FontSize="20"> Examples passed: </Label>
-                <Label Name="lblExamplesPassed" FontSize="20" FontWeight="Bold"></Label>
+            <WrapPanel >
+                <TextBox FontSize="20">Examples passed:</TextBox>
+                <TextBox Name="lblExamplesPassed" FontSize="20" FontWeight="Bold"></TextBox>
             </WrapPanel>
             <Separator />
         </StackPanel>
     </ScrollViewer>
+    
+    <Window.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="IsReadOnly" Value="True"></Setter>
+            <Setter Property="BorderThickness" Value="0"></Setter>
+            <Setter Property="TextWrapping" Value="Wrap"></Setter>
+            <Setter Property="Padding" Value="5"></Setter>
+        </Style>
+    </Window.Resources>
 </Window>
