@@ -3,7 +3,7 @@ This application is written in C#.
 
 It consists of two parts:
 - WPF - client side text/code editor application
-- ASP.NET - server side API code compiler and executor
+- ASP.NET MVC 4 - server side API code compiler and executor
 
 ### Supported languages
 C++, Java, C#
