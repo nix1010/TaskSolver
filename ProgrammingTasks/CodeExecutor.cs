@@ -8,13 +8,14 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
+using System.Web.Http;
 
 namespace ProgrammingTasks
 {
     public class CodeExecutor
     {
-        private readonly string codeLocation;
-        private readonly string binLocation;
+        protected readonly string codeLocation;
+        protected readonly string binLocation;
 
         public CodeExecutor()
         {
@@ -34,186 +35,221 @@ namespace ProgrammingTasks
                 ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "No body provided");
             }
 
-            RunResultDTO runResult = new RunResultDTO()
-            {
-                TaskTitle = task.title
-            };
-
-            ProcessResult processResult = Compile(taskSolution);
-
-            if (processResult.ExitCode != 0)
-            {
-                ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "Compile error " + 
-                    processResult.Error.Replace(codeLocation, ""));
-            }
-
-            foreach (example example in task.examples)
-            {
-                string description;
-                
-                processResult = Run(taskSolution, example);
-
-                if (processResult.ExitCode == 0)
-                {
-                    if (processResult.Output == example.output)
-                    {
-                        runResult.CorrectExamples++;
-                        description = "Code runs successfully";
-                    }
-                    else
-                    {
-                        description = "Code failed";
-                    }
-                }
-                else
-                {
-                    description = "Error running code";
-                }
-
-                runResult.exampleResults.Add(new ExampleResultDTO()
-                {
-                    Input = example.input,
-                    Output = example.output,
-                    SolutionResult = processResult.Output + processResult.Error.Replace(binLocation, ""),
-                    Description = description
-                });
-            }
-
-            return runResult;
-        }
-
-        private ProcessResult Compile(TaskSolutionDTO taskSolution)
-        {
-            string fileName = "";
-            string command = "";
-            StreamWriter writer = null;
-
             if (taskSolution.Code == null || taskSolution.Code.Trim() == "")
             {
                 ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "No code supplied");
             }
 
+            ILanguage languageType = null;
+            string filePath = codeLocation;
+
             if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.JAVA)
             {
-                fileName = codeLocation + "\\Main.java";
-                command = "/C javac -d " + binLocation + " " + fileName;
+                filePath += "\\Main.java";
+
+                languageType = new CompiledLanguage(
+                    filePath,
+                    "javac -d " + binLocation + " " + filePath,
+                    "java -cp " + binLocation + "; Main");
             }
             else if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.C_PLUS_PLUS)
             {
-                fileName = codeLocation + "\\main.cpp";
-                command = "/C gcc -o " + binLocation + "\\mainCpp " + fileName;
+                filePath += "\\main.cpp";
+
+                languageType = new CompiledLanguage(
+                    filePath,
+                    "gcc -cpp " + filePath + " -o " + binLocation + "\\mainCpp",
+                    binLocation + "\\mainCpp");
             }
             else if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.C_SHARP)
             {
-                fileName = codeLocation + "\\main.cs";
-                command = "/C csc -out:" + binLocation + "\\mainCSharp.exe " + fileName;
+                filePath += "\\Main.cs";
+
+                languageType = new CompiledLanguage(
+                    filePath,
+                    "csc -out:" + binLocation + "\\mainCSharp.exe " + filePath,
+                    binLocation + "\\mainCSharp");
             }
             else
             {
                 ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "Specified language not supported");
             }
 
-            //write code to file
-
-            writer = new StreamWriter(fileName);
-            writer.Write(taskSolution.Code);
-            writer.Close();
-
-            return RunProcess(command);
+            return languageType.RunSolution(taskSolution.Code, task);
         }
 
-        private ProcessResult Run(TaskSolutionDTO taskSolution, example example)
+        private abstract class ILanguage
         {
-            string command = "";
+            protected ProcessResult RunProcess(string argument, string[] inputs = null)
+            {
+                string result = "";
+                string error = "";
 
-            if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.JAVA)
-            {
-                command = "/C java -cp " + binLocation + "; Main";
-            }
-            else if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.C_PLUS_PLUS)
-            {
-                command = "/C " + binLocation + "\\mainCpp";
-            }
-            else if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.C_SHARP)
-            {
-                command = "/C " + binLocation + "\\mainCSharp";
-            }
-            else
-            {
-                ExceptionHandler.ThrowException(HttpStatusCode.NotFound, "Specified language not supported");
+                StreamWriter inputWriter = null;
+                StreamReader outputReader = null;
+                StreamReader errorReader = null;
+                Process process = new Process();
+                ProcessStartInfo startInfo = new ProcessStartInfo();
+
+                startInfo.FileName = "cmd.exe";
+                startInfo.Arguments = argument;
+                startInfo.UseShellExecute = false;
+                startInfo.RedirectStandardInput = true;
+                startInfo.RedirectStandardOutput = true;
+                startInfo.RedirectStandardError = true;
+
+                process.StartInfo = startInfo;
+
+                process.Start();
+
+                inputWriter = process.StandardInput;
+                outputReader = process.StandardOutput;
+                errorReader = process.StandardError;
+
+                if (inputs != null)
+                {
+                    for (int i = 0; i < inputs.Length; ++i)
+                    {
+                        inputWriter.WriteLine(inputs[i]);
+                    }
+                }
+
+                string text = "";
+
+                do
+                {
+                    text = outputReader.ReadLine();
+
+                    if (result.Length > 0 && (text != null && text.Length > 0))
+                    {
+                        result += '\n';
+                    }
+
+                    result += text;
+
+                } while (text != null && text.Length > 0);
+
+                do
+                {
+                    text = errorReader.ReadLine();
+
+                    if (error.Length > 0 && (text != null && text.Length > 0))
+                    {
+                        error += '\n';
+                    }
+
+                    error += text;
+
+                } while (text != null && text.Length > 0);
+
+                if (!process.WaitForExit(5000))
+                {
+                    process.Kill();
+                }
+
+                return new ProcessResult() { ExitCode = process.ExitCode, Output = result, Error = error };
             }
 
-            return RunProcess(command, example.input.Split(';'));
+            public abstract RunResultDTO RunSolution(string solutionCode, task task);
         }
 
-        private ProcessResult RunProcess(string argument, string[] inputs = null)
+        private class ScriptLanguage : ILanguage
         {
-            string result = "";
-            string error = "";
+            protected string filePath;
+            protected string runCommand;
 
-            StreamWriter inputWriter = null;
-            StreamReader outputReader = null;
-            StreamReader errorReader = null;
-            Process process = new Process();
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-
-            startInfo.FileName = "cmd.exe";
-            startInfo.Arguments = argument;
-            startInfo.UseShellExecute = false;
-            startInfo.RedirectStandardInput = true;
-            startInfo.RedirectStandardOutput = true;
-            startInfo.RedirectStandardError = true;
-
-            process.StartInfo = startInfo;
-
-            process.Start();
-
-            inputWriter = process.StandardInput;
-            outputReader = process.StandardOutput;
-            errorReader = process.StandardError;
-
-            if (inputs != null)
+            public ScriptLanguage(string filePath, string runCommand)
             {
-                for (int i = 0; i < inputs.Length; ++i)
-                {
-                    inputWriter.WriteLine(inputs[i]);
-                }
+                this.filePath = filePath;
+                this.runCommand = runCommand;
             }
 
-            string text = "";
-
-            do
+            protected RunResultDTO RunTaskExamples(task task)
             {
-                text = outputReader.ReadLine();
-
-                if (result.Length > 0 && (text != null && text.Length > 0))
+                ProcessResult processResult = null;
+                RunResultDTO runResult = new RunResultDTO()
                 {
-                    result += '\n';
+                    TaskTitle = task.title
+                };
+
+                foreach (example example in task.examples)
+                {
+                    string description;
+
+                    processResult = RunProcess("/C " + runCommand, example.input.Split(';'));
+
+                    if (processResult.ExitCode == 0)
+                    {
+                        if (processResult.Output == example.output)
+                        {
+                            runResult.CorrectExamples++;
+                            description = "Code runs successfully";
+                        }
+                        else
+                        {
+                            description = "Code failed";
+                        }
+                    }
+                    else
+                    {
+                        description = "Error running code";
+                    }
+
+                    runResult.exampleResults.Add(new ExampleResultDTO()
+                    {
+                        Input = example.input,
+                        Output = example.output,
+                        SolutionResult = processResult.Output
+                        +
+                            //remove path to the file from error
+                        processResult.Error.Replace(filePath.Replace(Path.GetFileName(filePath), ""), ""),
+                        Description = description
+                    });
                 }
 
-                result += text;
-
-            } while (text != null && text.Length > 0);
-
-            do
-            {
-                text = errorReader.ReadLine();
-
-                if (error.Length > 0 && (text != null && text.Length > 0))
-                {
-                    error += '\n';
-                }
-
-                error += text;
-
-            } while (text != null && text.Length > 0);
-
-            if (!process.WaitForExit(5000))
-            {
-                process.Kill();
+                return runResult;
             }
 
-            return new ProcessResult() { ExitCode = process.ExitCode, Output = result, Error = error };
+            protected void WriteCodeToFile(string solutionCode)
+            {
+                StreamWriter writer = new StreamWriter(filePath);
+                writer.Write(solutionCode);
+                writer.Close();
+            }
+
+            public override RunResultDTO RunSolution(string solutionCode, task task)
+            {
+                WriteCodeToFile(solutionCode);
+
+                return RunTaskExamples(task);
+            }
+        }
+
+        private class CompiledLanguage : ScriptLanguage
+        {
+            private string compileCommand;
+
+            public CompiledLanguage(string filePath, string compileCommand, string runCommand)
+                : base(filePath, runCommand)
+            {
+                this.compileCommand = compileCommand;
+            }
+
+            public override RunResultDTO RunSolution(string solutionCode, task task)
+            {
+                WriteCodeToFile(solutionCode);
+
+                ProcessResult processResult = RunProcess("/C " + compileCommand);
+
+                if (processResult.ExitCode != 0)
+                {
+                    ExceptionHandler.ThrowException(HttpStatusCode.BadRequest, "Compile error " +
+                        //remove path to the file from error
+                        processResult.Error.Replace(filePath.Replace(Path.GetFileName(filePath), ""), ""));
+                }
+
+                return base.RunTaskExamples(task);
+            }
         }
     }
 }
