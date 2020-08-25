@@ -14,8 +14,8 @@ namespace ProgrammingTasks
 {
     public class CodeExecutor
     {
-        protected readonly string codeLocation;
-        protected readonly string binLocation;
+        private readonly string codeLocation;
+        private readonly string binLocation;
 
         public CodeExecutor()
         {
