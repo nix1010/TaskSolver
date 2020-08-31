@@ -7,7 +7,7 @@
     <ProjectGuid>{A3DBA18E-E2D1-4823-BDA2-C17313997C12}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CodeEditorApplication</RootNamespace>
+    <RootNamespace>CodeEditor</RootNamespace>
     <AssemblyName>CodeEditorApplication</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

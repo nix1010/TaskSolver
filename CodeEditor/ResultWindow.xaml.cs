@@ -1,4 +1,4 @@
-﻿using CodeEditorApplication.Models;
+﻿using CodeEditor.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace CodeEditorApplication
+namespace CodeEditor
 {
     /// <summary>
     /// Interaction logic for ResultsWindow.xaml

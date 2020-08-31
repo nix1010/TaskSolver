@@ -1,5 +1,5 @@
-﻿using CodeEditorApplication.Models;
-using CodeEditorApplication.Utility;
+﻿using CodeEditor.Models;
+using CodeEditor.Utility;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Highlighting;
 using Microsoft.Win32;
@@ -21,7 +21,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace CodeEditorApplication
+namespace CodeEditor
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 
-namespace CodeEditorApplication.Utility
+namespace CodeEditor.Utility
 {
     internal static class MessageBoxCenterer
     {

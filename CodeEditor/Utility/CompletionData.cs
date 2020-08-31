@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CodeEditorApplication.Utility
+namespace CodeEditor.Utility
 {
     public class CompletionData : ICompletionData
     {
