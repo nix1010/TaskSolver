@@ -74,6 +74,9 @@
     </Compile>
     <Compile Include="Models\RunResult.cs" />
     <Compile Include="Models\ProgrammingTask.cs" />
+    <Compile Include="ServerConfigWindow.xaml.cs">
+      <DependentUpon>ServerConfigWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserControlSpinner.xaml.cs">
       <DependentUpon>UserControlSpinner.xaml</DependentUpon>
     </Compile>
@@ -96,6 +99,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="ResultWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ServerConfigWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

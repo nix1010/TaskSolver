@@ -1,15 +1,24 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
+using System.Windows;
 
 namespace CodeEditor.Utility
 {
     internal static class MessageBoxCenterer
     {
-        internal static void PrepToCenterMessageBoxOnWindow(MainWindow window)
+        internal static void PrepToCenterMessageBoxOnWindow(Window window)
         {
             MessageBoxCenterHelper helper = new MessageBoxCenterHelper();
             helper.Prep(window);
+        }
+        
+        public static MessageBoxResult MessageBoxCentered(Window window, string messageBoxText, string caption,
+            MessageBoxButton messageBoxButton = MessageBoxButton.OK)
+        {
+            PrepToCenterMessageBoxOnWindow(window);
+
+            return MessageBox.Show(messageBoxText, caption, messageBoxButton);
         }
 
         private class MessageBoxCenterHelper
@@ -17,7 +26,7 @@ namespace CodeEditor.Utility
             private int messageHook;
             private IntPtr parentFormHandle;
 
-            public void Prep(MainWindow window)
+            public void Prep(Window window)
             {
                 NativeMethods.CenterMessageCallBackDelegate callBackDelegate = new NativeMethods.CenterMessageCallBackDelegate(CenterMessageCallBack);
                 GCHandle.Alloc(callBackDelegate);

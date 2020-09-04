@@ -19,7 +19,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition />
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
         <Menu Grid.Row="0" Name="Menu">
@@ -34,6 +35,7 @@
             <MenuItem Header="_Edit" >
                 <MenuItem Header="_Refresh Tasks" Click="RefreshTasks_Click"></MenuItem>
                 <MenuItem Header="_Code Completion" Name="CodeCompletion" IsCheckable="True" IsChecked="True" Click="CodeCompletion_Click"></MenuItem>
+                <MenuItem Header="_Server Config" Click="ServerConfig_Click"></MenuItem>
             </MenuItem>
         </Menu>
         
@@ -72,5 +74,12 @@
                 </ContextMenu>
             </avalonEdit:TextEditor.ContextMenu>
         </avalonEdit:TextEditor>
+        <DockPanel Grid.Row="5" Height="15">
+            <WrapPanel >
+                <Label FontSize="11" Margin="0" Padding="5 0">Server:</Label>
+                <Label Name="lblServerStatus" FontSize="11" Padding="0"></Label>
+            </WrapPanel>
+            <Label Name="lblInfo" FontSize="11" Padding="0 0 10 0" HorizontalAlignment="Right">Test</Label>
+        </DockPanel>
     </Grid>
 </Window>

@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Management;
 using System.Net;
+using System.Threading;
 using System.Web;
 using System.Web.Http;
 
@@ -19,7 +21,10 @@ namespace ProgrammingTasks
 
         public CodeExecutor()
         {
-            this.codeLocation = HttpRuntime.AppDomainAppPath + "code";
+            Random r = new Random();
+
+            this.codeLocation = HttpRuntime.AppDomainAppPath + "code\\" +
+                (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) + "-" + r.Next(int.MaxValue);
             this.binLocation = codeLocation + "\\bin";
 
             if (!Directory.Exists(binLocation))
@@ -49,17 +54,24 @@ namespace ProgrammingTasks
 
                 languageType = new CompiledLanguage(
                     filePath,
-                    "javac -d " + binLocation + " " + filePath,
-                    "java -cp " + binLocation + "; Main");
+                    "javac -d \"" + binLocation + "\" \"" + filePath + "\"",
+                    "java -cp \"" + binLocation + "\"; Main");
             }
             else if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.C_PLUS_PLUS)
             {
                 filePath += "\\main.cpp";
-
+                /*
                 languageType = new CompiledLanguage(
                     filePath,
-                    "gcc -cpp " + filePath + " -o " + binLocation + "\\mainCpp",
-                    binLocation + "\\mainCpp");
+                    "gcc -cpp \"" + filePath + "\" -o \"" + binLocation + "\\mainCpp\"",
+                    "\"" + binLocation + "\\mainCpp\"");
+                 * */
+                
+                languageType = new CompiledLanguage(
+                    filePath,
+                    "g++ -std=c++1z -c \"" + filePath + "\" -o \"" + binLocation + "\\main.o\" " + //create o file in bin folder
+                    "&& g++ -std=c++1z \"" + binLocation + "\\main.o\" -o \"" + binLocation + "\\main\"", //link o file to exe
+                    "\"" + binLocation + "\\main\"");
             }
             else if (taskSolution.ProgrammingLanguage == ProgrammingLanguage.C_SHARP)
             {
@@ -67,8 +79,8 @@ namespace ProgrammingTasks
 
                 languageType = new CompiledLanguage(
                     filePath,
-                    "csc -out:" + binLocation + "\\mainCSharp.exe " + filePath,
-                    binLocation + "\\mainCSharp");
+                    "csc -out:\"" + binLocation + "\\main.exe\" \"" + filePath + "\"",
+                    "\"" + binLocation + "\\main\"");
             }
             else
             {
@@ -88,7 +100,6 @@ namespace ProgrammingTasks
                 StreamWriter inputWriter = null;
                 StreamReader outputReader = null;
                 StreamReader errorReader = null;
-                Process process = new Process();
                 ProcessStartInfo startInfo = new ProcessStartInfo();
 
                 startInfo.FileName = "cmd.exe";
@@ -98,56 +109,84 @@ namespace ProgrammingTasks
                 startInfo.RedirectStandardOutput = true;
                 startInfo.RedirectStandardError = true;
 
-                process.StartInfo = startInfo;
-
-                process.Start();
+                Process process = Process.Start(startInfo);
 
                 inputWriter = process.StandardInput;
                 outputReader = process.StandardOutput;
                 errorReader = process.StandardError;
 
-                if (inputs != null)
+                Thread t = new Thread(() =>
                 {
-                    for (int i = 0; i < inputs.Length; ++i)
+                    if (inputs != null)
                     {
-                        inputWriter.WriteLine(inputs[i]);
-                    }
-                }
-
-                string text = "";
-
-                do
-                {
-                    text = outputReader.ReadLine();
-
-                    if (result.Length > 0 && (text != null && text.Length > 0))
-                    {
-                        result += '\n';
+                        for (int i = 0; i < inputs.Length; ++i)
+                        {
+                            inputWriter.WriteLine(inputs[i]);
+                        }
                     }
 
-                    result += text;
+                    string text = "";
 
-                } while (text != null && text.Length > 0);
-
-                do
-                {
-                    text = errorReader.ReadLine();
-
-                    if (error.Length > 0 && (text != null && text.Length > 0))
+                    do
                     {
-                        error += '\n';
-                    }
+                        text = outputReader.ReadLine();
 
-                    error += text;
+                        if (result.Length > 0 && (text != null && text.Length > 0))
+                        {
+                            result += '\n';
+                        }
 
-                } while (text != null && text.Length > 0);
+                        result += text;
 
-                if (!process.WaitForExit(5000))
+                    } while (text != null && text.Length > 0);
+
+                    do
+                    {
+                        text = errorReader.ReadLine();
+
+                        if (error.Length > 0 && (text != null && text.Length > 0))
+                        {
+                            error += '\n';
+                        }
+
+                        error += text;
+
+                    } while (text != null && text.Length > 0);
+                });
+                t.IsBackground = true;
+                t.Start();
+                
+                if (!t.Join(5000))
                 {
-                    process.Kill();
+                    t.Interrupt();
+                    KillProcessAndChildren(process.Id);
+                    error = ": Execution too long";
                 }
 
                 return new ProcessResult() { ExitCode = process.ExitCode, Output = result, Error = error };
+            }
+
+            private void KillProcessAndChildren(int pid)
+            {
+                using (var searcher = new ManagementObjectSearcher("Select * From Win32_Process Where ParentProcessID=" + pid))
+                {
+                    var moc = searcher.Get();
+
+                    foreach (ManagementObject mo in moc)
+                    {
+                        KillProcessAndChildren(Convert.ToInt32(mo["ProcessID"]));
+                    }
+
+                    try
+                    {
+                        var proc = Process.GetProcessById(pid);
+                        proc.Kill();
+                    }
+                    catch (Exception)
+                    {
+                        // Process already exited.
+                    }
+                }
             }
 
             public abstract RunResultDTO RunSolution(string solutionCode, task task);
@@ -199,11 +238,10 @@ namespace ProgrammingTasks
                     {
                         Input = example.input,
                         Output = example.output,
-                        SolutionResult = processResult.Output
-                        +
+                        SolutionResult = processResult.Output,
+                        Description = description +
                             //remove path to the file from error
-                        processResult.Error.Replace(filePath.Replace(Path.GetFileName(filePath), ""), ""),
-                        Description = description
+                        processResult.Error.Replace(filePath.Replace(Path.GetFileName(filePath), ""), "")
                     });
                 }
 

@@ -13,6 +13,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -32,7 +34,10 @@ namespace CodeEditor
         private string currentFileContent;
         private string username;
         private string password;
-        private const string host = "http://localhost:50791/";
+        private string hostName;
+        private string port;
+        private string hostUrl;
+        private readonly Timer timer;
         private List<ProgrammingTask> tasks;
         private CompletionWindow completionWindow;
 
@@ -40,10 +45,22 @@ namespace CodeEditor
         {
             InitializeComponent();
 
+            SetHostUrl("localhost", "50791");
+            
+            timer = new Timer((Object stateInfo) =>
+            {
+                PingHost();
+            }, null, 0, 10000);
+
             ConfigureCodeCompletion();
 
             cmbProgrammingLanguage.ItemsSource =
                 typeof(ProgrammingLanguage).GetFields().Select(element => element.GetValue(null).ToString());
+
+            if (cmbProgrammingLanguage.Items.Count > 0)
+            {
+                cmbProgrammingLanguage.SelectedItem = cmbProgrammingLanguage.Items[0];
+            }
 
             username = password = null;
             completionWindow = null;
@@ -51,12 +68,19 @@ namespace CodeEditor
             NewDocument();
         }
 
-        private MessageBoxResult MessageBoxCentered(string messageBoxText, string caption,
-            MessageBoxButton messageBoxButton = MessageBoxButton.OK)
+        private void SetHostUrl(string hostName, string port)
         {
-            MessageBoxCenterer.PrepToCenterMessageBoxOnWindow(this);
-            
-            return MessageBox.Show(messageBoxText, caption, messageBoxButton);
+            this.hostName = hostName;
+            this.port = port;
+            this.hostUrl = "http://" + hostName + ":" + port + "/";
+        }
+
+        private void SetLabelInfo(string content)
+        {
+            Dispatcher.Invoke(new Action(() =>
+            {
+                lblInfo.Content = content;
+            }));
         }
 
         #region----- Button Events -----
@@ -78,7 +102,12 @@ namespace CodeEditor
         private void Open_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openDialog = new OpenFileDialog();
-            
+
+            if (UnsavedChanges())
+            {
+                return;
+            }
+
             if (openDialog.ShowDialog() == true)
             {
                 using (StreamReader streamReader = new StreamReader(openDialog.FileName))
@@ -102,6 +131,24 @@ namespace CodeEditor
                     SetLanguage(System.IO.Path.GetExtension(fileName));
                 }
             }
+        }
+
+        private bool UnsavedChanges()
+        {
+            if (this.Title.Contains("*"))
+            {
+                MessageBoxResult messageBoxResult =
+                    MessageBoxCenterer.MessageBoxCentered(this, "Do you want to save changes?", "Alert", MessageBoxButton.YesNoCancel);
+
+                if ((messageBoxResult == MessageBoxResult.Yes && !Save())
+                    ||
+                    messageBoxResult == MessageBoxResult.Cancel)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void SetLanguage(string extension)
@@ -188,13 +235,13 @@ namespace CodeEditor
 
             if (cmbTasks.SelectedIndex == -1)
             {
-                MessageBoxCentered("Please select task", "Warning");
+                MessageBoxCenterer.MessageBoxCentered(this, "Please select task", "Warning");
                 return;
             } 
             
             if (cmbProgrammingLanguage.SelectedIndex == -1)
             {
-                MessageBoxCentered("Please select programming language", "Warning");
+                MessageBoxCenterer.MessageBoxCentered(this, "Please select programming language", "Warning");
                 return;
             }
 
@@ -212,17 +259,28 @@ namespace CodeEditor
 
             ucSpinner.Visibility = System.Windows.Visibility.Visible;
             btnSendSolution.IsEnabled = false;
+            SetLabelInfo("Sending solution...");
 
             //don't block current thread
             Thread thread = new Thread(() =>
             {
-                HttpResponseMessage responseMessage = HttpRequest(host + "/api/tasks/" + selectedIndex, HttpMethod.Post, body,
+                HttpResponseMessage responseMessage = HttpRequest(hostUrl + "/api/tasks/" + selectedIndex, HttpMethod.Post, body,
                     headers);
                 
                 string responseText = responseMessage.Content.ReadAsStringAsync().Result;
 
                 Dispatcher.Invoke(new Action(() => { ucSpinner.Visibility = System.Windows.Visibility.Hidden; }));
                 Dispatcher.Invoke(new Action(() => { btnSendSolution.IsEnabled = true; }));
+                SetLabelInfo("");
+
+                if (responseMessage.StatusCode == HttpStatusCode.ServiceUnavailable)
+                {
+                    UpdateServerStatus(false);
+                }
+                else
+                {
+                    UpdateServerStatus(true);
+                }
 
                 if (responseMessage.StatusCode == HttpStatusCode.OK)
                 {
@@ -250,8 +308,8 @@ namespace CodeEditor
                             Logout();
                         }));
                     }
-
-                    MessageBoxCentered(JsonConvert.DeserializeObject<Dictionary<string, string>>(responseText)["Message"],
+                    
+                    MessageBoxCenterer.MessageBoxCentered(this, JsonConvert.DeserializeObject<Dictionary<string, string>>(responseText)["Message"],
                         responseMessage.StatusCode.ToString());
                 }
             });
@@ -280,11 +338,9 @@ namespace CodeEditor
             loginWindow.Top = this.Top + (this.Height - loginWindow.Height) / 2;
             loginWindow.Left = this.Left + (this.Width - loginWindow.Width) / 2;
             
-            loginWindow.ShowDialog();
+            bool? submitted = loginWindow.ShowDialog();
             
-            bool submitted = loginWindow.IsSubmitted();
-            
-            if (submitted)
+            if (submitted == true)
             {
                 username = loginWindow.txtBoxUsername.Text;
                 password = loginWindow.passwordBox.Password;
@@ -299,14 +355,14 @@ namespace CodeEditor
                 Menu.Items.Add(menuItem);
             }
             
-            return submitted;
+            return submitted == true;
         }
 
         private void Details_Click(object sender, RoutedEventArgs e)
         {
             if (cmbTasks.SelectedIndex != -1)
             {
-                MessageBoxCentered(tasks[cmbTasks.SelectedIndex].Description, tasks[cmbTasks.SelectedIndex].Title);
+                MessageBoxCenterer.MessageBoxCentered(this, tasks[cmbTasks.SelectedIndex].Description, tasks[cmbTasks.SelectedIndex].Title);
             }
         }
 
@@ -320,6 +376,31 @@ namespace CodeEditor
             ConfigureCodeCompletion();
         }
 
+        private void ServerConfig_Click(object sender, RoutedEventArgs e)
+        {
+            ServerConfigWindow serverConfig = new ServerConfigWindow();
+            serverConfig.txtBoxHostUrl.Text = hostName;
+            serverConfig.txtBoxPort.Text = port;
+
+            //center
+            serverConfig.Top = this.Top + (this.Height - serverConfig.Height) / 2;
+            serverConfig.Left = this.Left + (this.Width - serverConfig.Width) / 2;
+            
+            bool? result = serverConfig.ShowDialog();
+            
+            if (result == true)
+            {
+                SetHostUrl(serverConfig.txtBoxHostUrl.Text.Trim(), serverConfig.txtBoxPort.Text.Trim());
+
+                Thread t = new Thread(() =>
+                {
+                    PingHost();
+                });
+                t.IsBackground = true;
+                t.Start();
+            }
+        }
+
         #endregion
 
         #region----- Window Events -----
@@ -329,8 +410,45 @@ namespace CodeEditor
             PopulateTasksAsynchronically();
         }
 
+        private void PingHost()
+        {
+            try
+            {
+                using (TcpClient client = new TcpClient(hostName, Convert.ToInt32(port)))
+                {
+                    UpdateServerStatus(true);
+                }
+            }
+            catch (Exception)
+            {
+                UpdateServerStatus(false);
+            }
+        }
+
+        private void UpdateServerStatus(bool status)
+        {
+            if (status)
+            {
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    lblServerStatus.Foreground = System.Windows.Media.Brushes.Green;
+                    lblServerStatus.Content = "Available";
+                }));
+            }
+            else
+            {
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    lblServerStatus.Foreground = System.Windows.Media.Brushes.Red;
+                    lblServerStatus.Content = "Not Available";
+                }));
+            }
+        }
+
 		private void PopulateTasksAsynchronically()
 		{
+            SetLabelInfo("Refreshing tasks...");
+
 			Thread thread = new Thread(PopulateTasks);
 
             thread.IsBackground = true;
@@ -358,7 +476,9 @@ namespace CodeEditor
 
         private void PopulateTasks()
         {
-            HttpResponseMessage responseMessage = HttpRequest(host + "api/tasks", HttpMethod.Get);
+            HttpResponseMessage responseMessage = HttpRequest(hostUrl + "api/tasks", HttpMethod.Get);
+
+            SetLabelInfo("");
 
             if (responseMessage.StatusCode == HttpStatusCode.OK)
             {
@@ -386,26 +506,33 @@ namespace CodeEditor
                         break;
                     }
                 }
+
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    if (cmbTasks.Items.Count > 0)
+                    {
+                        cmbTasks.SelectedItem = cmbTasks.Items[0];
+                    }
+                }));
+
+                UpdateServerStatus(true);
             }
             else
             {
-                MessageBoxCentered("Failed to obtain tasks", responseMessage.StatusCode.ToString());
+                if (responseMessage.StatusCode == HttpStatusCode.ServiceUnavailable)
+                {
+                    UpdateServerStatus(false);
+                }
+
+                MessageBoxCenterer.MessageBoxCentered(this, "Failed to obtain tasks", responseMessage.StatusCode.ToString());
             }
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            if (this.Title.Contains("*"))
+            if (UnsavedChanges())
             {
-                MessageBoxResult messageBoxResult =
-                    MessageBoxCentered("Do you want to save changes?", "Alert", MessageBoxButton.YesNoCancel);
-
-                if ((messageBoxResult == MessageBoxResult.Yes && !Save())
-                    ||
-                    messageBoxResult == MessageBoxResult.Cancel)
-                {
-                    e.Cancel = true;
-                }
+                e.Cancel = true;
             }
         }
 
@@ -579,15 +706,24 @@ namespace CodeEditor
                 content = new FormUrlEncodedContent(body);    
             }
 
-            Task<HttpResponseMessage> response = client.SendAsync(new HttpRequestMessage(method, url)
-            {
-                Content = content,
-            });
-
             try
             {
+                Task<HttpResponseMessage> response = client.SendAsync(new HttpRequestMessage(method, url)
+                {
+                    Content = content,
+                });
+
                 statusCode = response.Result.StatusCode;
                 responseText = response.Result.Content.ReadAsStringAsync().Result;
+            }
+            catch (UriFormatException e)
+            {
+                statusCode = HttpStatusCode.BadRequest;
+                responseText = JsonConvert.SerializeObject(new Dictionary<string, string>()
+                {
+                    {"StatusCode", statusCode.ToString()},
+                    {"Message", e.Message}
+                });
             }
             catch (Exception)
             {
